@@ -1,8 +1,3 @@
-/**
- * CODrop configuration. Limits can be tuned via environment variables so they
- * are not hardcoded across the app.
- */
-
 function envNumber(value: string | undefined, fallback: number): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
@@ -11,11 +6,8 @@ function envNumber(value: string | undefined, fallback: number): number {
 const MB = 1024 * 1024;
 
 export const CODROP = {
-  /** Maximum characters for a text drop. */
   maxTextLength: envNumber(import.meta.env["VITE_MAX_TEXT_CHARS"], 500_000),
-  /** Maximum image upload size in bytes. */
   maxImageBytes: envNumber(import.meta.env["VITE_MAX_IMAGE_MB"], 25) * MB,
-  /** Maximum video upload size in bytes. */
   maxVideoBytes: envNumber(import.meta.env["VITE_MAX_VIDEO_MB"], 200) * MB,
   imageMimeTypes: ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"],
   videoMimeTypes: [
@@ -26,6 +18,11 @@ export const CODROP = {
     "video/x-matroska",
   ],
   ttlHours: 24,
+  ttlOptions: [
+    { hours: 1, label: "1 hour" },
+    { hours: 6, label: "6 hours" },
+    { hours: 24, label: "24 hours" },
+  ] as const,
 } as const;
 
 export const IMAGE_ACCEPT = ".jpg,.jpeg,.png,.webp,.gif";
@@ -38,9 +35,20 @@ export function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * MB)).toFixed(2)} GB`;
 }
 
+/** Individual drop: COe22 */
 export function normalizeCode(raw: string): string {
   const cleaned = raw.trim().replace(/\s+/g, "");
   const match = cleaned.match(/^co([a-zA-Z])(\d{2})$/i);
   if (!match) return "";
   return `CO${match[1]!.toLowerCase()}${match[2]}`;
+}
+
+/** Batch main: CODr21 */
+export function normalizeAnyCode(raw: string): { kind: "drop" | "batch"; code: string } | null {
+  const cleaned = raw.trim().replace(/\s+/g, "");
+  const batch = cleaned.match(/^cod([a-zA-Z])(\d{2})$/i);
+  if (batch) return { kind: "batch", code: `COD${batch[1]!.toLowerCase()}${batch[2]}` };
+  const drop = cleaned.match(/^co([a-zA-Z])(\d{2})$/i);
+  if (drop) return { kind: "drop", code: `CO${drop[1]!.toLowerCase()}${drop[2]}` };
+  return null;
 }
