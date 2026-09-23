@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
 import type { CreatedDrop } from "@/lib/create-drop";
+import { saveRecentDrop } from "@/lib/recent-drops";
 import { ShareFileModal } from "./ShareFileModal";
 import { ShareTextModal } from "./ShareTextModal";
 import type { ShareKind } from "./ShareOptions";
@@ -10,9 +11,14 @@ export function useShareFlow() {
   const navigate = useNavigate();
   const [active, setActive] = useState<ShareKind | null>(null);
 
-  function handleCreated(drop: CreatedDrop) {
+  function handleCreated(drop: CreatedDrop & { type?: ShareKind; title?: string | null }) {
     setActive(null);
-    // Open the shared drop page immediately
+    saveRecentDrop({
+      code: drop.code,
+      expiresAt: drop.expiresAt,
+      type: drop.type ?? "text",
+      title: drop.title ?? null,
+    });
     void navigate({ to: "/drop/$code", params: { code: drop.code } });
   }
 
@@ -21,19 +27,19 @@ export function useShareFlow() {
       <ShareTextModal
         open={active === "text"}
         onOpenChange={(open) => setActive(open ? "text" : null)}
-        onCreated={handleCreated}
+        onCreated={(drop) => handleCreated({ ...drop, type: "text" })}
       />
       <ShareFileModal
         kind="image"
         open={active === "image"}
         onOpenChange={(open) => setActive(open ? "image" : null)}
-        onCreated={handleCreated}
+        onCreated={(drop) => handleCreated({ ...drop, type: "image" })}
       />
       <ShareFileModal
         kind="video"
         open={active === "video"}
         onOpenChange={(open) => setActive(open ? "video" : null)}
-        onCreated={handleCreated}
+        onCreated={(drop) => handleCreated({ ...drop, type: "video" })}
       />
     </>
   );

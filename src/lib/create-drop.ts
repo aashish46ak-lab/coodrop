@@ -1,7 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
 import { CODROP } from "./codrop-config";
 
-export type CreatedDrop = { code: string; expiresAt: string };
+export type CreatedDrop = {
+  code: string;
+  expiresAt: string;
+  title?: string | null;
+};
 
 type DropRpcRow = { code: string; expires_at: string };
 
@@ -9,7 +13,7 @@ const FRIENDLY_ERRORS: Record<string, string> = {
   empty_content: "Add some text before sharing.",
   content_too_large: "That text is too large to share.",
   missing_file: "Pick a file before sharing.",
-  invalid_type: "That kind of drop isn't supported.",
+  invalid_type: "That kind of drop is not supported.",
   no_code_available: "All share codes are busy right now. Please try again in a moment.",
   function: "Database function missing. Run the CODrop SQL migration in Supabase.",
   permission: "Permission denied. Check Supabase RLS policies and grants.",
@@ -27,11 +31,10 @@ function friendly(message: string): string {
   if (lower.includes("jwt") || lower.includes("api key") || lower.includes("invalid api")) {
     return "Invalid Supabase API key. Check VITE_SUPABASE_PUBLISHABLE_KEY on Vercel.";
   }
-  // Surface short real message so setup issues are visible
   const short = (message || "").slice(0, 120);
   return short
     ? `Couldn't create drop: ${short}`
-    : "We couldn't create your drop. Please try again.";
+    : "We could not create your drop. Please try again.";
 }
 
 async function insertDrop(args: {
@@ -51,7 +54,8 @@ async function insertDrop(args: {
   if (args.originalFilename != null) params.p_original_filename = args.originalFilename;
   if (args.mimeType != null) params.p_mime_type = args.mimeType;
   if (args.fileSize != null) params.p_file_size = args.fileSize;
-  if (args.title != null && args.title.trim()) params.p_title = args.title.trim().slice(0, 120);
+  const title = args.title?.trim().slice(0, 120) || null;
+  if (title) params.p_title = title;
 
   const { data, error } = await supabase.rpc("create_drop", params);
 
@@ -60,8 +64,8 @@ async function insertDrop(args: {
     throw new Error(friendly(error.message ?? error.code ?? ""));
   }
   const row = (Array.isArray(data) ? data[0] : data) as DropRpcRow | undefined;
-  if (!row?.code) throw new Error("We couldn't create your drop. Please try again.");
-  return { code: row.code, expiresAt: row.expires_at };
+  if (!row?.code) throw new Error("We could not create your drop. Please try again.");
+  return { code: row.code, expiresAt: row.expires_at, title };
 }
 
 export async function createTextDrop(
@@ -140,7 +144,7 @@ export async function createFileDrop(
   const maxBytes = kind === "image" ? CODROP.maxImageBytes : CODROP.maxVideoBytes;
 
   if (!allowed.includes(file.type as never)) {
-    throw new Error("That file type isn't supported.");
+    throw new Error("That file type is not supported.");
   }
   if (file.size > maxBytes) {
     throw new Error("That file is larger than the allowed limit.");
