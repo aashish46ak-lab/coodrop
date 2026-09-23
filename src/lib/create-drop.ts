@@ -28,14 +28,21 @@ async function insertDrop(args: {
   mimeType?: string | null;
   fileSize?: number | null;
 }): Promise<CreatedDrop> {
-  const { data, error } = await supabase.rpc("create_drop", {
-    p_type: args.type,
-    p_content: args.content ?? undefined,
-    p_storage_path: args.storagePath ?? undefined,
-    p_original_filename: args.originalFilename ?? undefined,
-    p_mime_type: args.mimeType ?? undefined,
-    p_file_size: args.fileSize ?? undefined,
-  });
+  const params: {
+    p_type: string;
+    p_content?: string;
+    p_storage_path?: string;
+    p_original_filename?: string;
+    p_mime_type?: string;
+    p_file_size?: number;
+  } = { p_type: args.type };
+  if (args.content != null) params.p_content = args.content;
+  if (args.storagePath != null) params.p_storage_path = args.storagePath;
+  if (args.originalFilename != null) params.p_original_filename = args.originalFilename;
+  if (args.mimeType != null) params.p_mime_type = args.mimeType;
+  if (args.fileSize != null) params.p_file_size = args.fileSize;
+
+  const { data, error } = await supabase.rpc("create_drop", params);
 
   if (error) throw new Error(friendly(error.message ?? ""));
   const row = (Array.isArray(data) ? data[0] : data) as DropRpcRow | undefined;
