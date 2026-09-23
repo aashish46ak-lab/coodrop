@@ -102,6 +102,7 @@ function extensionOf(name: string): string {
   return parts.length > 1 ? `.${parts.pop()!.toLowerCase().slice(0, 8)}` : "";
 }
 
+/** Upload original file bytes - no client-side compression/resizing. */
 async function uploadFile(
   path: string,
   file: File,
@@ -142,6 +143,7 @@ export async function createFileDrop(
     throw new Error("That file is larger than the allowed limit.");
   }
 
+  // Store original filename extension; upload raw File (full quality)
   const path = `${kind}/${crypto.randomUUID()}${extensionOf(file.name)}`;
   await uploadFile(path, file, onProgress);
 

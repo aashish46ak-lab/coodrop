@@ -9,7 +9,7 @@ import { ShareFileModal } from "./ShareFileModal";
 import { ShareTextModal } from "./ShareTextModal";
 import type { ShareKind } from "./ShareOptions";
 
-export function useShareFlow(opts?: { stayOnFolder?: boolean }) {
+export function useShareFlow(_opts?: { stayOnFolder?: boolean }) {
   const navigate = useNavigate();
   const [active, setActive] = useState<ShareKind | null>(null);
 
@@ -21,6 +21,7 @@ export function useShareFlow(opts?: { stayOnFolder?: boolean }) {
       expiresAt: drop.expiresAt,
       type,
       title: drop.title,
+      batchCode: drop.batchCode,
     });
     addToSessionFolder(
       {
@@ -32,7 +33,6 @@ export function useShareFlow(opts?: { stayOnFolder?: boolean }) {
       drop.batchCode,
     );
     toast.success(`Shared · ${drop.code}`);
-    // Stay on folder session until refresh
     void navigate({ to: "/folder/$code", params: { code: drop.batchCode } });
   }
 
