@@ -25,17 +25,21 @@ export function ShareTextModal({
   onCreated: (drop: CreatedDrop) => void;
 }) {
   const [title, setTitle] = useState("");
+  const [password, setPassword] = useState("");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
 
   const tooLong = text.length > CODROP.maxTextLength;
+  const canShare = title.trim().length > 0 && text.trim().length > 0 && !tooLong;
 
   async function share() {
+    if (!canShare) return;
     setBusy(true);
     try {
-      const drop = await createTextDrop(text, title);
+      const drop = await createTextDrop(text, title, password || undefined);
       setText("");
       setTitle("");
+      setPassword("");
       onCreated(drop);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Something went wrong.");
@@ -55,19 +59,38 @@ export function ShareTextModal({
         </DialogHeader>
 
         <div className="space-y-3">
-          <div className="space-y-1.5">
-            <label htmlFor="drop-title" className="text-xs font-medium text-muted-foreground">
-              Title <span className="font-normal">(optional)</span>
-            </label>
-            <Input
-              id="drop-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value.slice(0, 120))}
-              placeholder="e.g. Meeting notes, API config..."
-              maxLength={120}
-              disabled={busy}
-              className="h-10"
-            />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label htmlFor="drop-title" className="text-xs font-medium text-muted-foreground">
+                Title <span className="text-destructive">*</span>
+              </label>
+              <Input
+                id="drop-title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value.slice(0, 120))}
+                placeholder="e.g. Meeting notes"
+                maxLength={120}
+                disabled={busy}
+                className="h-10"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label htmlFor="drop-pass" className="text-xs font-medium text-muted-foreground">
+                Password <span className="font-normal">(optional)</span>
+              </label>
+              <Input
+                id="drop-pass"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value.slice(0, 64))}
+                placeholder="Leave empty for public"
+                maxLength={64}
+                disabled={busy}
+                className="h-10"
+                autoComplete="new-password"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -81,7 +104,7 @@ export function ShareTextModal({
               onChange={(event) => setText(event.target.value)}
               spellCheck={false}
               placeholder={"// paste anything here\nconst hello = 'world';"}
-              className="h-[40vh] min-h-56 w-full resize-y rounded-xl border border-border bg-secondary/30 p-4 font-mono text-sm leading-relaxed text-foreground shadow-inner placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-ring"
+              className="h-[38vh] min-h-52 w-full resize-y rounded-xl border border-border bg-secondary/30 p-4 font-mono text-sm leading-relaxed text-foreground shadow-inner placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span className={tooLong ? "text-destructive" : undefined}>
@@ -95,10 +118,11 @@ export function ShareTextModal({
           <Button
             type="button"
             variant="ghost"
-            disabled={busy || (!text && !title)}
+            disabled={busy}
             onClick={() => {
               setText("");
               setTitle("");
+              setPassword("");
             }}
           >
             Clear
@@ -112,11 +136,7 @@ export function ShareTextModal({
             >
               Cancel
             </Button>
-            <Button
-              type="button"
-              disabled={busy || !text.trim() || tooLong}
-              onClick={() => void share()}
-            >
+            <Button type="button" disabled={busy || !canShare} onClick={() => void share()}>
               {busy ? (
                 <>
                   <Loader2 className="mr-1.5 h-4 w-4 animate-spin" aria-hidden="true" />

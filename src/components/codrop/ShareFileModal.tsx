@@ -34,6 +34,7 @@ export function ShareFileModal({
   onCreated: (drop: CreatedDrop) => void;
 }) {
   const [title, setTitle] = useState("");
+  const [password, setPassword] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
@@ -59,6 +60,7 @@ export function ShareFileModal({
     if (!open) {
       setFile(null);
       setTitle("");
+      setPassword("");
       setProgress(0);
       setError(null);
       setBusy(false);
@@ -78,7 +80,7 @@ export function ShareFileModal({
       return;
     }
     if (next.size > maxBytes) {
-      setError(`That file is ${formatBytes(next.size)} — the limit is ${formatBytes(maxBytes)}.`);
+      setError(`That file is ${formatBytes(next.size)}. Limit is ${formatBytes(maxBytes)}.`);
       setFile(null);
       return;
     }
@@ -89,12 +91,19 @@ export function ShareFileModal({
   }
 
   async function share() {
-    if (!file) return;
+    if (!file || !title.trim()) return;
     setBusy(true);
     setError(null);
     setProgress(0);
     try {
-      const drop = await createFileDrop(kind, file, setProgress, undefined, title);
+      const drop = await createFileDrop(
+        kind,
+        file,
+        setProgress,
+        undefined,
+        title,
+        password || undefined,
+      );
       onCreated(drop);
     } catch (err) {
       const message = err instanceof Error ? err.message : "The upload failed.";
@@ -105,6 +114,8 @@ export function ShareFileModal({
     }
   }
 
+  const canShare = !!file && title.trim().length > 0;
+
   return (
     <Dialog open={open} onOpenChange={(next) => (busy ? null : onOpenChange(next))}>
       <DialogContent className="max-w-xl">
@@ -112,32 +123,51 @@ export function ShareFileModal({
           <DialogTitle>{isImage ? "Share Image" : "Share Video"}</DialogTitle>
           <DialogDescription>
             {isImage
-              ? `JPG, JPEG, PNG, WEBP, GIF · up to ${formatBytes(maxBytes)}`
-              : `MP4, WEBM, MOV, OGV, MKV · up to ${formatBytes(maxBytes)}`}
+              ? `JPG, PNG, WEBP, GIF up to ${formatBytes(maxBytes)}`
+              : `MP4, WEBM, MOV up to ${formatBytes(maxBytes)}`}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-1.5">
-          <label htmlFor="file-title" className="text-xs font-medium text-muted-foreground">
-            Title <span className="font-normal">(optional)</span>
-          </label>
-          <Input
-            id="file-title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value.slice(0, 120))}
-            placeholder={isImage ? "e.g. Team photo, screenshot..." : "e.g. Demo clip, recording..."}
-            maxLength={120}
-            disabled={busy}
-            className="h-10"
-          />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <label htmlFor="file-title" className="text-xs font-medium text-muted-foreground">
+              Title <span className="text-destructive">*</span>
+            </label>
+            <Input
+              id="file-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value.slice(0, 120))}
+              placeholder={isImage ? "e.g. Team photo" : "e.g. Demo clip"}
+              maxLength={120}
+              disabled={busy}
+              className="h-10"
+              required
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label htmlFor="file-pass" className="text-xs font-medium text-muted-foreground">
+              Password <span className="font-normal">(optional)</span>
+            </label>
+            <Input
+              id="file-pass"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value.slice(0, 64))}
+              placeholder="Leave empty for public"
+              maxLength={64}
+              disabled={busy}
+              className="h-10"
+              autoComplete="new-password"
+            />
+          </div>
         </div>
 
         <UploadDropzone
           accept={accept}
           hint={
             isImage
-              ? `JPG, JPEG, PNG, WEBP or GIF up to ${formatBytes(maxBytes)}`
-              : `MP4, WEBM, MOV, OGV or MKV up to ${formatBytes(maxBytes)}`
+              ? `JPG, PNG, WEBP or GIF up to ${formatBytes(maxBytes)}`
+              : `MP4, WEBM, MOV up to ${formatBytes(maxBytes)}`
           }
           file={file}
           disabled={busy}
@@ -183,7 +213,7 @@ export function ShareFileModal({
           >
             Cancel
           </Button>
-          <Button type="button" disabled={busy || !file} onClick={() => void share()}>
+          <Button type="button" disabled={busy || !canShare} onClick={() => void share()}>
             {busy ? (
               <>
                 <Loader2 className="mr-1.5 h-4 w-4 animate-spin" aria-hidden="true" />
