@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Loader2, Search } from "lucide-react";
 
-import { normalizeCode } from "@/lib/codrop-config";
+import { normalizeAnyCode } from "@/lib/codrop-config";
 import { cn } from "@/lib/utils";
 
 export function CodeSearchIsland({
@@ -19,14 +19,18 @@ export function CodeSearchIsland({
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
-    const code = normalizeCode(value);
-    if (!code) {
-      setError("Use a code like COf26");
+    const parsed = normalizeAnyCode(value);
+    if (!parsed) {
+      setError("Use COe22 or batch CODr21");
       return;
     }
     setError(null);
     setBusy(true);
-    void navigate({ to: "/drop/$code", params: { code } }).finally(() => setBusy(false));
+    const path =
+      parsed.kind === "batch"
+        ? ({ to: "/batch/$code", params: { code: parsed.code } } as const)
+        : ({ to: "/drop/$code", params: { code: parsed.code } } as const);
+    void navigate(path).finally(() => setBusy(false));
   }
 
   if (compact) {
@@ -85,9 +89,6 @@ export function CodeSearchIsland({
         className="mx-auto flex w-full max-w-2xl items-center gap-2 rounded-full border border-white/10 bg-[#0B0D10] p-2 pl-5 shadow-[0_24px_60px_-28px_rgba(11,13,16,0.65)] sm:gap-3"
       >
         <Search className="h-4.5 w-4.5 shrink-0 text-white/45" aria-hidden="true" />
-        <label htmlFor="drop-code" className="sr-only">
-          Search share code
-        </label>
         <input
           id="drop-code"
           value={value}

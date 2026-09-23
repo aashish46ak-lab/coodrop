@@ -1,11 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
 import { CODROP } from "./codrop-config";
 import { hashPassword } from "./password";
+import { getOrCreateBatch } from "./batch";
 
 export type CreatedDrop = {
   code: string;
   expiresAt: string;
   title: string;
+  batchCode: string;
 };
 
 type DropRpcRow = { code: string; expires_at: string };
@@ -21,13 +23,13 @@ function friendly(message: string): string {
   if (lower.includes("no_code_available"))
     return "All share codes are busy. Please try again.";
   if (lower.includes("function") || lower.includes("does not exist"))
-    return "Database not set up. Run the CODrop SQL in Supabase.";
+    return "Database not set up. Run the latest CODrop SQL in Supabase.";
   if (lower.includes("jwt") || lower.includes("api key") || lower.includes("invalid api"))
     return "Invalid Supabase API key. Check env vars on Vercel.";
-  if (lower.includes("bucket") || lower.includes("not found") || lower.includes("404"))
+  if (lower.includes("bucket") || lower.includes("404"))
     return "Storage bucket \"drops\" missing. Create a private bucket named drops.";
-  if (lower.includes("policy") || lower.includes("row-level") || lower.includes("403") || lower.includes("401"))
-    return "Upload blocked. Add storage INSERT policy for bucket drops (anon)."
+  if (lower.includes("policy") || lower.includes("403") || lower.includes("401"))
+    return "Upload blocked. Add storage INSERT policy for bucket drops (anon).";
   const short = (message || "").slice(0, 140);
   return short ? `Couldn't create drop: ${short}` : "We could not create your drop. Please try again.";
 }
@@ -41,13 +43,19 @@ async function insertDrop(args: {
   fileSize?: number | null;
   title: string;
   password?: string | null;
+  ttlHours?: number;
 }): Promise<CreatedDrop> {
   const title = args.title.trim().slice(0, 120);
   if (!title) throw new Error("Title is required.");
 
+  const batch = getOrCreateBatch();
+  const ttl = args.ttlHours && [1, 6, 24].includes(args.ttlHours) ? args.ttlHours : 24;
+
   const params: Record<string, string | number | null | undefined> = {
     p_type: args.type,
     p_title: title,
+    p_batch_code: batch.code,
+    p_ttl_hours: ttl,
   };
   if (args.content != null) params.p_content = args.content;
   if (args.storagePath != null) params.p_storage_path = args.storagePath;
@@ -67,20 +75,26 @@ async function insertDrop(args: {
   }
   const row = (Array.isArray(data) ? data[0] : data) as DropRpcRow | undefined;
   if (!row?.code) throw new Error("We could not create your drop. Please try again.");
-  return { code: row.code, expiresAt: row.expires_at, title };
+  return {
+    code: row.code,
+    expiresAt: row.expires_at,
+    title,
+    batchCode: batch.code,
+  };
 }
 
 export async function createTextDrop(
   content: string,
   title: string,
   password?: string,
+  ttlHours?: number,
 ): Promise<CreatedDrop> {
   if (!title.trim()) throw new Error("Title is required.");
   if (!content.trim()) throw new Error("Add some text before sharing.");
   if (content.length > CODROP.maxTextLength) {
     throw new Error("That text is too long to share.");
   }
-  return insertDrop({ type: "text", content, title, password });
+  return insertDrop({ type: "text", content, title, password, ttlHours });
 }
 
 function extensionOf(name: string): string {
@@ -88,70 +102,23 @@ function extensionOf(name: string): string {
   return parts.length > 1 ? `.${parts.pop()!.toLowerCase().slice(0, 8)}` : "";
 }
 
-/** Upload via Supabase client (handles new publishable keys better). */
 async function uploadFile(
   path: string,
   file: File,
   onProgress: (percent: number) => void,
 ): Promise<void> {
   onProgress(5);
-
-  // Prefer official client upload
   const { error } = await supabase.storage.from("drops").upload(path, file, {
     cacheControl: "3600",
     upsert: false,
     contentType: file.type || undefined,
   });
-
   if (!error) {
     onProgress(100);
     return;
   }
-
   console.error("[CODrop] storage upload error:", error);
-
-  // Fallback: raw XHR (progress + alternate auth headers)
-  const baseUrl = import.meta.env["VITE_SUPABASE_URL"] as string;
-  const key = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] as string;
-  if (!baseUrl || !key) {
-    throw new Error(friendly(error.message));
-  }
-
-  await new Promise<void>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${baseUrl}/storage/v1/object/drops/${path}`);
-    xhr.setRequestHeader("apikey", key);
-    // New sb_publishable keys are not JWTs - avoid Bearer when needed
-    if (!key.startsWith("sb_publishable_") && !key.startsWith("sb_secret_")) {
-      xhr.setRequestHeader("authorization", `Bearer ${key}`);
-    } else {
-      xhr.setRequestHeader("authorization", `Bearer ${key}`);
-    }
-    xhr.setRequestHeader("x-upsert", "false");
-    if (file.type) xhr.setRequestHeader("content-type", file.type);
-
-    xhr.upload.onprogress = (event) => {
-      if (event.lengthComputable) {
-        onProgress(Math.min(99, Math.round((event.loaded / event.total) * 100)));
-      }
-    };
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        onProgress(100);
-        resolve();
-      } else {
-        reject(
-          new Error(
-            friendly(
-              `Upload failed ${xhr.status}: ${xhr.responseText || error.message}`,
-            ),
-          ),
-        );
-      }
-    };
-    xhr.onerror = () => reject(new Error("Network problem during upload."));
-    xhr.send(file);
-  });
+  throw new Error(friendly(error.message));
 }
 
 export async function createFileDrop(
@@ -161,6 +128,7 @@ export async function createFileDrop(
   _signal?: AbortSignal,
   title?: string,
   password?: string,
+  ttlHours?: number,
 ): Promise<CreatedDrop> {
   if (!title?.trim()) throw new Error("Title is required.");
 
@@ -185,5 +153,6 @@ export async function createFileDrop(
     fileSize: file.size,
     title,
     password,
+    ttlHours,
   });
 }
