@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { Clock3, Copy, SearchX } from "lucide-react";
+import { Clock3, Copy, Lock, SearchX } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { BrandHeader } from "@/components/codrop/Logo";
 import { ExpirationTimer } from "@/components/codrop/ExpirationTimer";
 import { SharedDropViewer } from "@/components/codrop/SharedDropViewer";
 import { ShareOptions, type ShareKind } from "@/components/codrop/ShareOptions";
 import { CodeSearchIsland } from "@/components/codrop/CodeSearchIsland";
+import { ShareQrBlock } from "@/components/codrop/QrCode";
 import { Footer } from "@/components/codrop/Footer";
 import { useShareFlow } from "@/components/codrop/ShareFlow";
 import { copyToClipboard } from "@/lib/clipboard";
@@ -23,15 +26,12 @@ export const Route = createFileRoute("/drop/$code")({
   },
   head: ({ params, loaderData }) => {
     const drop = loaderData as DropResult | undefined;
-    const titleLabel =
-      drop && drop.state === "ok" && drop.title
-        ? drop.title
-        : `Shared Drop ${params.code}`;
+    let titleLabel = `Shared Drop ${params.code}`;
+    if (drop && (drop.state === "ok" || drop.state === "locked") && drop.title) {
+      titleLabel = drop.title;
+    }
     const title = `${titleLabel} - CODrop`;
-    const description =
-      drop && drop.state === "ok" && drop.title
-        ? `${drop.title}. Temporary CODrop share.`
-        : "Open a CODrop share code to view, copy or download shared content.";
+    const description = "Open a CODrop share to view, copy or download shared content.";
     return {
       meta: [
         { title },
@@ -39,6 +39,7 @@ export const Route = createFileRoute("/drop/$code")({
         { name: "robots", content: "noindex" },
         { property: "og:title", content: title },
         { property: "og:description", content: description },
+        { property: "og:image", content: "/og.svg" },
       ],
     };
   },
@@ -104,12 +105,10 @@ function EmptyState({ kind }: { kind: "not_found" | "expired" | "error" }) {
       </span>
       <h1 className="mt-4 text-xl font-semibold tracking-tight text-foreground">{copy.title}</h1>
       <p className="mt-2 text-sm text-muted-foreground">{copy.text}</p>
-
       <div className="mx-auto mt-6 max-w-xs">
         <p className="mb-2 text-xs font-medium text-muted-foreground">Search another</p>
         <CodeSearchIsland compact className="mx-auto max-w-full" />
       </div>
-
       <Button asChild variant="ghost" className="mt-4">
         <Link to="/">Back to home</Link>
       </Button>
@@ -117,28 +116,90 @@ function EmptyState({ kind }: { kind: "not_found" | "expired" | "error" }) {
   );
 }
 
-function DropPage() {
-  const drop = Route.useLoaderData();
-  const { code } = Route.useParams();
+function LockedPanel({
+  code,
+  title,
+  expiresAt,
+}: {
+  code: string;
+  title: string | null;
+  expiresAt: string;
+}) {
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [unlocked, setUnlocked] = useState<Extract<DropResult, { state: "ok" }> | null>(null);
+  const router = useRouter();
+
+  async function unlock() {
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await getDrop({ data: { code, password } });
+      if (result.state === "ok") {
+        setUnlocked(result);
+      } else if (result.state === "locked") {
+        setError("Wrong password. Try again.");
+      } else {
+        void router.invalidate();
+      }
+    } catch {
+      setError("Could not unlock. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (unlocked) {
+    return <OkDropBody drop={unlocked} code={code} />;
+  }
+
+  return (
+    <div className="mx-auto max-w-sm rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
+      <span className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-muted-foreground">
+        <Lock className="h-5 w-5" aria-hidden="true" />
+      </span>
+      <h1 className="mt-4 text-xl font-semibold tracking-tight text-foreground">
+        {title || "Password protected"}
+      </h1>
+      <p className="mt-2 text-sm text-muted-foreground">Enter the password to view this drop.</p>
+      <ExpirationTimer expiresAt={expiresAt} className="mt-3" />
+      <form
+        className="mt-6 space-y-3 text-left"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void unlock();
+        }}
+      >
+        <Input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+          autoFocus
+          autoComplete="current-password"
+        />
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+        <Button type="submit" className="w-full" disabled={busy || !password}>
+          {busy ? "Unlocking..." : "Unlock"}
+        </Button>
+      </form>
+    </div>
+  );
+}
+
+function OkDropBody({
+  drop,
+  code,
+}: {
+  drop: Extract<DropResult, { state: "ok" }>;
+  code: string;
+}) {
   const router = useRouter();
   const { openShare, flow } = useShareFlow();
 
-  if (drop.state === "not_found")
-    return (
-      <DropShell>
-        <EmptyState kind="not_found" />
-      </DropShell>
-    );
-  if (drop.state === "expired")
-    return (
-      <DropShell>
-        <EmptyState kind="expired" />
-      </DropShell>
-    );
-
   return (
-    <DropShell>
-      {/* Search another - top of drop page */}
+    <>
       <div className="mb-8 flex justify-end">
         <div className="w-full max-w-[260px]">
           <p className="mb-1.5 text-right text-[11px] font-medium text-muted-foreground">
@@ -173,6 +234,10 @@ function DropPage() {
         <ExpirationTimer expiresAt={drop.expiresAt} onExpired={() => void router.invalidate()} />
       </div>
 
+      <div className="mb-8 flex justify-center">
+        <ShareQrBlock code={code} />
+      </div>
+
       <SharedDropViewer drop={drop} />
 
       <div className="mt-14 border-t border-border pt-10">
@@ -181,6 +246,36 @@ function DropPage() {
       </div>
 
       {flow}
+    </>
+  );
+}
+
+function DropPage() {
+  const drop = Route.useLoaderData();
+  const { code } = Route.useParams();
+
+  if (drop.state === "not_found")
+    return (
+      <DropShell>
+        <EmptyState kind="not_found" />
+      </DropShell>
+    );
+  if (drop.state === "expired")
+    return (
+      <DropShell>
+        <EmptyState kind="expired" />
+      </DropShell>
+    );
+  if (drop.state === "locked")
+    return (
+      <DropShell>
+        <LockedPanel code={drop.code} title={drop.title} expiresAt={drop.expiresAt} />
+      </DropShell>
+    );
+
+  return (
+    <DropShell>
+      <OkDropBody drop={drop} code={code} />
     </DropShell>
   );
 }

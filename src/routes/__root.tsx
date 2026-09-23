@@ -83,24 +83,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Temporarily share text, images and videos with a simple code. Every drop expires after 24 hours.",
+          "Temporarily share text, images and videos with a simple code. Optional password. Free and anonymous.",
       },
       { name: "author", content: "CODrop" },
       { property: "og:title", content: "CODrop - Share Anything. Get a Code." },
       {
         property: "og:description",
-        content:
-          "Temporarily share text, images and videos with a simple code. Every drop expires after 24 hours.",
+        content: "Temporarily share text, images and videos with a simple code.",
       },
       { property: "og:site_name", content: "CODrop" },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: "/og.svg" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "CODrop - Share Anything. Get a Code." },
+      {
+        name: "twitter:description",
+        content: "Share text, photos and videos with a temporary code.",
+      },
+      { name: "twitter:image", content: "/og.svg" },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
