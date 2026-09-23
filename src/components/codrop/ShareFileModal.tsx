@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -13,12 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import {
-  CODROP,
-  IMAGE_ACCEPT,
-  VIDEO_ACCEPT,
-  formatBytes,
-} from "@/lib/codrop-config";
+import { CODROP, IMAGE_ACCEPT, VIDEO_ACCEPT, formatBytes } from "@/lib/codrop-config";
 import { createFileDrop, type CreatedDrop } from "@/lib/create-drop";
 import { UploadDropzone } from "./UploadDropzone";
 
@@ -35,6 +30,8 @@ export function ShareFileModal({
 }) {
   const [title, setTitle] = useState("");
   const [password, setPassword] = useState("");
+  const [showPass, setShowPass] = useState(false);
+  const [ttl, setTtl] = useState<1 | 6 | 24>(24);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
@@ -71,23 +68,17 @@ export function ShareFileModal({
     setError(null);
     setProgress(0);
     if (!allowed.includes(next.type as never)) {
-      setError(
-        isImage
-          ? "Unsupported image format. Use JPG, JPEG, PNG, WEBP or GIF."
-          : "Unsupported video format. Use MP4, WEBM, MOV, OGV or MKV.",
-      );
+      setError(isImage ? "Unsupported image format." : "Unsupported video format.");
       setFile(null);
       return;
     }
     if (next.size > maxBytes) {
-      setError(`That file is ${formatBytes(next.size)}. Limit is ${formatBytes(maxBytes)}.`);
+      setError(`File is ${formatBytes(next.size)}. Limit ${formatBytes(maxBytes)}.`);
       setFile(null);
       return;
     }
     setFile(next);
-    if (!title.trim()) {
-      setTitle(next.name.replace(/\.[^.]+$/, "").slice(0, 120));
-    }
+    if (!title.trim()) setTitle(next.name.replace(/\.[^.]+$/, "").slice(0, 120));
   }
 
   async function share() {
@@ -103,10 +94,11 @@ export function ShareFileModal({
         undefined,
         title,
         password || undefined,
+        ttl,
       );
       onCreated(drop);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "The upload failed.";
+      const message = err instanceof Error ? err.message : "Upload failed.";
       setError(message);
       toast.error(message);
     } finally {
@@ -130,45 +122,66 @@ export function ShareFileModal({
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <label htmlFor="file-title" className="text-xs font-medium text-muted-foreground">
+            <label className="text-xs font-medium text-muted-foreground">
               Title <span className="text-destructive">*</span>
             </label>
             <Input
-              id="file-title"
               value={title}
               onChange={(e) => setTitle(e.target.value.slice(0, 120))}
               placeholder={isImage ? "e.g. Team photo" : "e.g. Demo clip"}
-              maxLength={120}
               disabled={busy}
               className="h-10"
-              required
             />
           </div>
           <div className="space-y-1.5">
-            <label htmlFor="file-pass" className="text-xs font-medium text-muted-foreground">
+            <label className="text-xs font-medium text-muted-foreground">
               Password <span className="font-normal">(optional)</span>
             </label>
-            <Input
-              id="file-pass"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value.slice(0, 64))}
-              placeholder="Leave empty for public"
-              maxLength={64}
-              disabled={busy}
-              className="h-10"
-              autoComplete="new-password"
-            />
+            <div className="relative">
+              <Input
+                type={showPass ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value.slice(0, 64))}
+                placeholder="Leave empty for public"
+                disabled={busy}
+                className="h-10 pr-10"
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                onClick={() => setShowPass((v) => !v)}
+              >
+                {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <p className="text-xs font-medium text-muted-foreground">Expires after</p>
+          <div className="flex flex-wrap gap-2">
+            {CODROP.ttlOptions.map((opt) => (
+              <button
+                key={opt.hours}
+                type="button"
+                disabled={busy}
+                onClick={() => setTtl(opt.hours)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
+                  ttl === opt.hours
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border text-muted-foreground"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
         </div>
 
         <UploadDropzone
           accept={accept}
-          hint={
-            isImage
-              ? `JPG, PNG, WEBP or GIF up to ${formatBytes(maxBytes)}`
-              : `MP4, WEBM, MOV up to ${formatBytes(maxBytes)}`
-          }
+          hint={isImage ? `Images up to ${formatBytes(maxBytes)}` : `Videos up to ${formatBytes(maxBytes)}`}
           file={file}
           disabled={busy}
           onFile={pick}
@@ -178,11 +191,7 @@ export function ShareFileModal({
           }}
         >
           {previewUrl && isImage ? (
-            <img
-              src={previewUrl}
-              alt="Selected image preview"
-              className="max-h-64 w-full object-contain"
-            />
+            <img src={previewUrl} alt="Preview" className="max-h-64 w-full object-contain" />
           ) : previewUrl ? (
             <video src={previewUrl} controls className="max-h-64 w-full bg-black" />
           ) : null}
@@ -192,32 +201,25 @@ export function ShareFileModal({
           <div className="space-y-1.5">
             <Progress value={progress} className="h-2" />
             <p className="text-xs text-muted-foreground">
-              {progress >= 100 ? "Creating your drop..." : `Uploading... ${progress}%`}
+              {progress >= 100 ? "Creating..." : `Uploading... ${progress}%`}
             </p>
           </div>
         ) : null}
 
         {error ? (
-          <p className="flex items-start gap-2 text-sm text-destructive" role="alert">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            {error}
+          <p className="flex gap-2 text-sm text-destructive">
+            <AlertCircle className="h-4 w-4 shrink-0" /> {error}
           </p>
         ) : null}
 
         <DialogFooter className="gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={busy}
-            onClick={() => onOpenChange(false)}
-          >
+          <Button variant="outline" disabled={busy} onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="button" disabled={busy || !canShare} onClick={() => void share()}>
+          <Button disabled={busy || !canShare} onClick={() => void share()}>
             {busy ? (
               <>
-                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" aria-hidden="true" />
-                Uploading...
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Uploading...
               </>
             ) : error ? (
               "Retry"

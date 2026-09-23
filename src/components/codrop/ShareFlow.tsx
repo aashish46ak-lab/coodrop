@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 
 import type { CreatedDrop } from "@/lib/create-drop";
 import { saveRecentDrop } from "@/lib/recent-drops";
@@ -11,14 +12,15 @@ export function useShareFlow() {
   const navigate = useNavigate();
   const [active, setActive] = useState<ShareKind | null>(null);
 
-  function handleCreated(drop: CreatedDrop & { type?: ShareKind; title?: string | null }) {
+  function handleCreated(drop: CreatedDrop & { type?: ShareKind }) {
     setActive(null);
     saveRecentDrop({
       code: drop.code,
       expiresAt: drop.expiresAt,
       type: drop.type ?? "text",
-      title: drop.title ?? null,
+      title: drop.title,
     });
+    toast.success(`Shared · ${drop.code} · batch ${drop.batchCode}`);
     void navigate({ to: "/drop/$code", params: { code: drop.code } });
   }
 

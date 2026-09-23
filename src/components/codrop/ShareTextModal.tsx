@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,8 @@ export function ShareTextModal({
 }) {
   const [title, setTitle] = useState("");
   const [password, setPassword] = useState("");
+  const [showPass, setShowPass] = useState(false);
+  const [ttl, setTtl] = useState<1 | 6 | 24>(24);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -36,7 +38,7 @@ export function ShareTextModal({
     if (!canShare) return;
     setBusy(true);
     try {
-      const drop = await createTextDrop(text, title, password || undefined);
+      const drop = await createTextDrop(text, title, password || undefined, ttl);
       setText("");
       setTitle("");
       setPassword("");
@@ -53,9 +55,7 @@ export function ShareTextModal({
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Share Text</DialogTitle>
-          <DialogDescription>
-            Paste notes, source code, logs, JSON, Markdown or links.
-          </DialogDescription>
+          <DialogDescription>Paste notes, source code, logs, JSON or links.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
@@ -72,75 +72,83 @@ export function ShareTextModal({
                 maxLength={120}
                 disabled={busy}
                 className="h-10"
-                required
               />
             </div>
             <div className="space-y-1.5">
               <label htmlFor="drop-pass" className="text-xs font-medium text-muted-foreground">
                 Password <span className="font-normal">(optional)</span>
               </label>
-              <Input
-                id="drop-pass"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value.slice(0, 64))}
-                placeholder="Leave empty for public"
-                maxLength={64}
-                disabled={busy}
-                className="h-10"
-                autoComplete="new-password"
-              />
+              <div className="relative">
+                <Input
+                  id="drop-pass"
+                  type={showPass ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value.slice(0, 64))}
+                  placeholder="Leave empty for public"
+                  maxLength={64}
+                  disabled={busy}
+                  className="h-10 pr-10"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowPass((v) => !v)}
+                  aria-label={showPass ? "Hide password" : "Show password"}
+                >
+                  {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="drop-text" className="sr-only">
-              Text to share
-            </label>
-            <textarea
-              id="drop-text"
-              value={text}
-              autoFocus
-              onChange={(event) => setText(event.target.value)}
-              spellCheck={false}
-              placeholder={"// paste anything here\nconst hello = 'world';"}
-              className="h-[38vh] min-h-52 w-full resize-y rounded-xl border border-border bg-secondary/30 p-4 font-mono text-sm leading-relaxed text-foreground shadow-inner placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span className={tooLong ? "text-destructive" : undefined}>
-                {text.length.toLocaleString()} / {CODROP.maxTextLength.toLocaleString()} characters
-              </span>
+          <div className="space-y-1.5">
+            <p className="text-xs font-medium text-muted-foreground">Expires after</p>
+            <div className="flex flex-wrap gap-2">
+              {CODROP.ttlOptions.map((opt) => (
+                <button
+                  key={opt.hours}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setTtl(opt.hours)}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                    ttl === opt.hours
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border bg-card text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
           </div>
+
+          <textarea
+            id="drop-text"
+            value={text}
+            autoFocus
+            onChange={(event) => setText(event.target.value)}
+            spellCheck={false}
+            placeholder={"// paste anything here"}
+            className="h-[36vh] min-h-48 w-full resize-y rounded-xl border border-border bg-secondary/30 p-4 font-mono text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+          <p className={`text-xs ${tooLong ? "text-destructive" : "text-muted-foreground"}`}>
+            {text.length.toLocaleString()} / {CODROP.maxTextLength.toLocaleString()} characters
+          </p>
         </div>
 
         <DialogFooter className="gap-2 sm:justify-between">
-          <Button
-            type="button"
-            variant="ghost"
-            disabled={busy}
-            onClick={() => {
-              setText("");
-              setTitle("");
-              setPassword("");
-            }}
-          >
+          <Button type="button" variant="ghost" disabled={busy} onClick={() => { setText(""); setTitle(""); setPassword(""); }}>
             Clear
           </Button>
           <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={busy}
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" disabled={busy} onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="button" disabled={busy || !canShare} onClick={() => void share()}>
               {busy ? (
                 <>
-                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" aria-hidden="true" />
-                  Creating...
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Creating...
                 </>
               ) : (
                 "Share Text"
