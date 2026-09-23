@@ -138,6 +138,16 @@ function DropPage() {
 
   return (
     <DropShell>
+      {/* Search another - top of drop page */}
+      <div className="mb-8 flex justify-end">
+        <div className="w-full max-w-[260px]">
+          <p className="mb-1.5 text-right text-[11px] font-medium text-muted-foreground">
+            Search another
+          </p>
+          <CodeSearchIsland compact />
+        </div>
+      </div>
+
       <div className="mb-6 flex flex-col items-center gap-3 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
           Shared drop
