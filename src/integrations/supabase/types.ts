@@ -14,13 +14,70 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      shared_drops: {
+        Row: {
+          code: string
+          content: string | null
+          created_at: string
+          expires_at: string
+          file_size: number | null
+          id: string
+          metadata: Json | null
+          mime_type: string | null
+          original_filename: string | null
+          status: string
+          storage_path: string | null
+          type: string
+        }
+        Insert: {
+          code: string
+          content?: string | null
+          created_at?: string
+          expires_at?: string
+          file_size?: number | null
+          id?: string
+          metadata?: Json | null
+          mime_type?: string | null
+          original_filename?: string | null
+          status?: string
+          storage_path?: string | null
+          type: string
+        }
+        Update: {
+          code?: string
+          content?: string | null
+          created_at?: string
+          expires_at?: string
+          file_size?: number | null
+          id?: string
+          metadata?: Json | null
+          mime_type?: string | null
+          original_filename?: string | null
+          status?: string
+          storage_path?: string | null
+          type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_drop: {
+        Args: {
+          p_content?: string
+          p_file_size?: number
+          p_mime_type?: string
+          p_original_filename?: string
+          p_storage_path?: string
+          p_type: string
+        }
+        Returns: {
+          code: string
+          expires_at: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
