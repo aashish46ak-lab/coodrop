@@ -9,7 +9,6 @@ import { ExpirationTimer } from "@/components/codrop/ExpirationTimer";
 import { SharedDropViewer } from "@/components/codrop/SharedDropViewer";
 import { ShareOptions, type ShareKind } from "@/components/codrop/ShareOptions";
 import { CodeSearchIsland } from "@/components/codrop/CodeSearchIsland";
-import { ShareQrBlock } from "@/components/codrop/QrCode";
 import { Footer } from "@/components/codrop/Footer";
 import { useShareFlow } from "@/components/codrop/ShareFlow";
 import { copyToClipboard } from "@/lib/clipboard";
@@ -232,10 +231,6 @@ function OkDropBody({
           </Button>
         </div>
         <ExpirationTimer expiresAt={drop.expiresAt} onExpired={() => void router.invalidate()} />
-      </div>
-
-      <div className="mb-8 flex justify-center">
-        <ShareQrBlock code={code} />
       </div>
 
       <SharedDropViewer drop={drop} />
