@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import {
   CODROP,
@@ -32,6 +33,7 @@ export function ShareFileModal({
   onOpenChange: (open: boolean) => void;
   onCreated: (drop: CreatedDrop) => void;
 }) {
+  const [title, setTitle] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
@@ -56,6 +58,7 @@ export function ShareFileModal({
   useEffect(() => {
     if (!open) {
       setFile(null);
+      setTitle("");
       setProgress(0);
       setError(null);
       setBusy(false);
@@ -80,6 +83,9 @@ export function ShareFileModal({
       return;
     }
     setFile(next);
+    if (!title.trim()) {
+      setTitle(next.name.replace(/\.[^.]+$/, "").slice(0, 120));
+    }
   }
 
   async function share() {
@@ -88,7 +94,7 @@ export function ShareFileModal({
     setError(null);
     setProgress(0);
     try {
-      const drop = await createFileDrop(kind, file, setProgress);
+      const drop = await createFileDrop(kind, file, setProgress, undefined, title);
       onCreated(drop);
     } catch (err) {
       const message = err instanceof Error ? err.message : "The upload failed.";
@@ -110,6 +116,21 @@ export function ShareFileModal({
               : `MP4, WEBM, MOV, OGV, MKV · up to ${formatBytes(maxBytes)}`}
           </DialogDescription>
         </DialogHeader>
+
+        <div className="space-y-1.5">
+          <label htmlFor="file-title" className="text-xs font-medium text-muted-foreground">
+            Title <span className="font-normal">(optional)</span>
+          </label>
+          <Input
+            id="file-title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value.slice(0, 120))}
+            placeholder={isImage ? "e.g. Team photo, screenshot..." : "e.g. Demo clip, recording..."}
+            maxLength={120}
+            disabled={busy}
+            className="h-10"
+          />
+        </div>
 
         <UploadDropzone
           accept={accept}

@@ -11,13 +11,27 @@ const FRIENDLY_ERRORS: Record<string, string> = {
   missing_file: "Pick a file before sharing.",
   invalid_type: "That kind of drop isn't supported.",
   no_code_available: "All share codes are busy right now. Please try again in a moment.",
+  function: "Database function missing. Run the CODrop SQL migration in Supabase.",
+  permission: "Permission denied. Check Supabase RLS policies and grants.",
+  network: "Network error reaching Supabase. Check your URL and key.",
 };
 
 function friendly(message: string): string {
+  const lower = (message || "").toLowerCase();
   for (const key of Object.keys(FRIENDLY_ERRORS)) {
-    if (message.includes(key)) return FRIENDLY_ERRORS[key]!;
+    if (lower.includes(key)) return FRIENDLY_ERRORS[key]!;
   }
-  return "We couldn't create your drop. Please try again.";
+  if (lower.includes("does not exist") || lower.includes("could not find")) {
+    return "Database not set up. Run the create_drop SQL in Supabase SQL Editor.";
+  }
+  if (lower.includes("jwt") || lower.includes("api key") || lower.includes("invalid api")) {
+    return "Invalid Supabase API key. Check VITE_SUPABASE_PUBLISHABLE_KEY on Vercel.";
+  }
+  // Surface short real message so setup issues are visible
+  const short = (message || "").slice(0, 120);
+  return short
+    ? `Couldn't create drop: ${short}`
+    : "We couldn't create your drop. Please try again.";
 }
 
 async function insertDrop(args: {
@@ -27,35 +41,38 @@ async function insertDrop(args: {
   originalFilename?: string | null;
   mimeType?: string | null;
   fileSize?: number | null;
+  title?: string | null;
 }): Promise<CreatedDrop> {
-  const params: {
-    p_type: string;
-    p_content?: string;
-    p_storage_path?: string;
-    p_original_filename?: string;
-    p_mime_type?: string;
-    p_file_size?: number;
-  } = { p_type: args.type };
+  const params: Record<string, string | number | null | undefined> = {
+    p_type: args.type,
+  };
   if (args.content != null) params.p_content = args.content;
   if (args.storagePath != null) params.p_storage_path = args.storagePath;
   if (args.originalFilename != null) params.p_original_filename = args.originalFilename;
   if (args.mimeType != null) params.p_mime_type = args.mimeType;
   if (args.fileSize != null) params.p_file_size = args.fileSize;
+  if (args.title != null && args.title.trim()) params.p_title = args.title.trim().slice(0, 120);
 
   const { data, error } = await supabase.rpc("create_drop", params);
 
-  if (error) throw new Error(friendly(error.message ?? ""));
+  if (error) {
+    console.error("[CODrop] create_drop error:", error);
+    throw new Error(friendly(error.message ?? error.code ?? ""));
+  }
   const row = (Array.isArray(data) ? data[0] : data) as DropRpcRow | undefined;
   if (!row?.code) throw new Error("We couldn't create your drop. Please try again.");
   return { code: row.code, expiresAt: row.expires_at };
 }
 
-export async function createTextDrop(content: string): Promise<CreatedDrop> {
+export async function createTextDrop(
+  content: string,
+  title?: string,
+): Promise<CreatedDrop> {
   if (!content.trim()) throw new Error("Add some text before sharing.");
   if (content.length > CODROP.maxTextLength) {
     throw new Error("That text is too long to share.");
   }
-  return insertDrop({ type: "text", content });
+  return insertDrop({ type: "text", content, title });
 }
 
 function extensionOf(name: string): string {
@@ -63,7 +80,6 @@ function extensionOf(name: string): string {
   return parts.length > 1 ? `.${parts.pop()!.toLowerCase().slice(0, 8)}` : "";
 }
 
-/** Uploads a file to storage with real progress reporting. */
 function uploadWithProgress(
   path: string,
   file: File,
@@ -72,6 +88,12 @@ function uploadWithProgress(
 ): Promise<void> {
   const baseUrl = import.meta.env["VITE_SUPABASE_URL"];
   const key = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
+
+  if (!baseUrl || !key) {
+    return Promise.reject(
+      new Error("Supabase env missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY."),
+    );
+  }
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -93,10 +115,14 @@ function uploadWithProgress(
       } else if (xhr.status === 413) {
         reject(new Error("That file is too large to upload."));
       } else {
-        reject(new Error("The upload failed. Please try again."));
+        reject(
+          new Error(
+            `Upload failed (${xhr.status}). Check storage bucket "drops" and upload policy.`,
+          ),
+        );
       }
     };
-    xhr.onerror = () => reject(new Error("Network problem during upload. Please try again."));
+    xhr.onerror = () => reject(new Error("Network problem during upload. Check Supabase URL."));
     xhr.onabort = () => reject(new Error("Upload cancelled."));
     signal?.addEventListener("abort", () => xhr.abort());
     xhr.send(file);
@@ -108,6 +134,7 @@ export async function createFileDrop(
   file: File,
   onProgress: (percent: number) => void,
   signal?: AbortSignal,
+  title?: string,
 ): Promise<CreatedDrop> {
   const allowed = kind === "image" ? CODROP.imageMimeTypes : CODROP.videoMimeTypes;
   const maxBytes = kind === "image" ? CODROP.maxImageBytes : CODROP.maxVideoBytes;
@@ -128,5 +155,6 @@ export async function createFileDrop(
     originalFilename: file.name.slice(0, 200),
     mimeType: file.type,
     fileSize: file.size,
+    title,
   });
 }

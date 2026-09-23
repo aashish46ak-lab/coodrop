@@ -14,13 +14,26 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Temporarily share text, images and videos with a simple code. Every drop expires after 24 hours.",
+          "Temporarily share text, images and videos with a simple code. Every drop expires after 24 hours. Free, anonymous, no signup.",
       },
+      {
+        name: "keywords",
+        content: "temporary file share, share code, anonymous upload, pastebin, image share, video share, CODrop",
+      },
+      { name: "robots", content: "index, follow" },
       { property: "og:title", content: "CODrop — Share Anything. Get a Code." },
       {
         property: "og:description",
         content:
           "Temporarily share text, images and videos with a simple code. Every drop expires after 24 hours.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "CODrop" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "CODrop — Share Anything. Get a Code." },
+      {
+        name: "twitter:description",
+        content: "Share text, photos and videos with a temporary code. Expires in 24 hours.",
       },
     ],
   }),
@@ -53,11 +66,12 @@ function Index() {
           </p>
         </section>
 
-        <ShareOptions className="mt-10 sm:mt-12" onSelect={openShare} />
-
-        <div className="mt-16 sm:mt-20">
-          <CodeSearchIsland />
+        {/* Compact search — top right, just above share cards */}
+        <div className="mt-8 flex justify-end sm:mt-10">
+          <CodeSearchIsland compact />
         </div>
+
+        <ShareOptions className="mt-4 sm:mt-5" onSelect={openShare} />
 
         <div className="mt-20">
           <HowItWorks />
