@@ -6,6 +6,7 @@ import { BrandHeader } from "@/components/codrop/Logo";
 import { ExpirationTimer } from "@/components/codrop/ExpirationTimer";
 import { SharedDropViewer } from "@/components/codrop/SharedDropViewer";
 import { ShareOptions, type ShareKind } from "@/components/codrop/ShareOptions";
+import { CodeSearchIsland } from "@/components/codrop/CodeSearchIsland";
 import { Footer } from "@/components/codrop/Footer";
 import { useShareFlow } from "@/components/codrop/ShareFlow";
 import { copyToClipboard } from "@/lib/clipboard";
@@ -26,10 +27,10 @@ export const Route = createFileRoute("/drop/$code")({
       drop && drop.state === "ok" && drop.title
         ? drop.title
         : `Shared Drop ${params.code}`;
-    const title = `${titleLabel} — CODrop`;
+    const title = `${titleLabel} - CODrop`;
     const description =
       drop && drop.state === "ok" && drop.title
-        ? `${drop.title} · Temporary CODrop share.`
+        ? `${drop.title}. Temporary CODrop share.`
         : "Open a CODrop share code to view, copy or download shared content.";
     return {
       meta: [
@@ -81,8 +82,8 @@ function EmptyState({ kind }: { kind: "not_found" | "expired" | "error" }) {
   const copy = {
     not_found: {
       icon: SearchX,
-      title: "We couldn't find that drop.",
-      text: "Double-check the code — it looks like COf26.",
+      title: "We could not find that drop.",
+      text: "Double-check the code. Codes look like COf26.",
     },
     expired: {
       icon: Clock3,
@@ -92,7 +93,7 @@ function EmptyState({ kind }: { kind: "not_found" | "expired" | "error" }) {
     error: {
       icon: SearchX,
       title: "Something went wrong.",
-      text: "We couldn't load this drop right now. Please try again.",
+      text: "We could not load this drop right now. Please try again.",
     },
   }[kind];
 
@@ -103,8 +104,14 @@ function EmptyState({ kind }: { kind: "not_found" | "expired" | "error" }) {
       </span>
       <h1 className="mt-4 text-xl font-semibold tracking-tight text-foreground">{copy.title}</h1>
       <p className="mt-2 text-sm text-muted-foreground">{copy.text}</p>
-      <Button asChild className="mt-6">
-        <Link to="/">Create a new drop</Link>
+
+      <div className="mx-auto mt-6 max-w-xs">
+        <p className="mb-2 text-xs font-medium text-muted-foreground">Search another</p>
+        <CodeSearchIsland compact className="mx-auto max-w-full" />
+      </div>
+
+      <Button asChild variant="ghost" className="mt-4">
+        <Link to="/">Back to home</Link>
       </Button>
     </div>
   );
@@ -132,8 +139,8 @@ function DropPage() {
   return (
     <DropShell>
       <div className="mb-6 flex flex-col items-center gap-3 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">
-          Shared Drop
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          Shared drop
         </p>
         {drop.title ? (
           <h1 className="max-w-xl text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
@@ -158,15 +165,9 @@ function DropPage() {
 
       <SharedDropViewer drop={drop} />
 
-      {/* Share another */}
       <div className="mt-14 border-t border-border pt-10">
-        <p className="mb-5 text-center text-sm font-medium text-muted-foreground">
-          Share another
-        </p>
-        <ShareOptions
-          compact
-          onSelect={(kind: ShareKind) => openShare(kind)}
-        />
+        <p className="mb-5 text-center text-sm font-medium text-muted-foreground">Share another</p>
+        <ShareOptions compact onSelect={(kind: ShareKind) => openShare(kind)} />
       </div>
 
       {flow}

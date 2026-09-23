@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { BrandHeader } from "@/components/codrop/Logo";
 import { ShareOptions } from "@/components/codrop/ShareOptions";
 import { CodeSearchIsland } from "@/components/codrop/CodeSearchIsland";
+import { RecentShared } from "@/components/codrop/RecentShared";
 import { HowItWorks } from "@/components/codrop/HowItWorks";
 import { Footer } from "@/components/codrop/Footer";
 import { useShareFlow } from "@/components/codrop/ShareFlow";
@@ -10,7 +11,7 @@ import { useShareFlow } from "@/components/codrop/ShareFlow";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CODrop — Share Anything. Get a Code." },
+      { title: "CODrop - Share Anything. Get a Code." },
       {
         name: "description",
         content:
@@ -18,10 +19,11 @@ export const Route = createFileRoute("/")({
       },
       {
         name: "keywords",
-        content: "temporary file share, share code, anonymous upload, pastebin, image share, video share, CODrop",
+        content:
+          "temporary file share, share code, anonymous upload, pastebin, image share, video share, CODrop",
       },
       { name: "robots", content: "index, follow" },
-      { property: "og:title", content: "CODrop — Share Anything. Get a Code." },
+      { property: "og:title", content: "CODrop - Share Anything. Get a Code." },
       {
         property: "og:description",
         content: "Share text, images and videos with a simple code.",
@@ -29,7 +31,7 @@ export const Route = createFileRoute("/")({
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "CODrop" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "CODrop — Share Anything. Get a Code." },
+      { name: "twitter:title", content: "CODrop - Share Anything. Get a Code." },
       {
         name: "twitter:description",
         content: "Share text, photos and videos with a temporary code.",
@@ -70,6 +72,8 @@ function Index() {
         </div>
 
         <ShareOptions className="mt-4 sm:mt-5" onSelect={openShare} />
+
+        <RecentShared className="mt-10" />
 
         <div className="mt-20">
           <HowItWorks />

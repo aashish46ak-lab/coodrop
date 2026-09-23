@@ -35,10 +35,6 @@ export function HowItWorks() {
           </li>
         ))}
       </ol>
-
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        Temporary by design. Every drop disappears after 24 hours.
-      </p>
     </section>
   );
 }
