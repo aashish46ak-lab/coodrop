@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { BrandHeader } from "@/components/codrop/Logo";
 import { ExpirationTimer } from "@/components/codrop/ExpirationTimer";
 import { SharedDropViewer } from "@/components/codrop/SharedDropViewer";
+import { ShareOptions, type ShareKind } from "@/components/codrop/ShareOptions";
 import { Footer } from "@/components/codrop/Footer";
+import { useShareFlow } from "@/components/codrop/ShareFlow";
 import { copyToClipboard } from "@/lib/clipboard";
 import { getDrop, type DropResult } from "@/lib/drops.functions";
 
@@ -13,7 +15,8 @@ export const Route = createFileRoute("/drop/$code")({
   loader: async ({ params }): Promise<DropResult> => {
     try {
       return await getDrop({ data: { code: params.code } });
-    } catch {
+    } catch (e) {
+      console.error("[CODrop] loader error:", e);
       return { state: "not_found" };
     }
   },
@@ -26,8 +29,8 @@ export const Route = createFileRoute("/drop/$code")({
     const title = `${titleLabel} — CODrop`;
     const description =
       drop && drop.state === "ok" && drop.title
-        ? `${drop.title} · Temporary CODrop share. Expires in 24 hours.`
-        : "Open a CODrop share code to view, copy or download temporarily shared content.";
+        ? `${drop.title} · Temporary CODrop share.`
+        : "Open a CODrop share code to view, copy or download shared content.";
     return {
       meta: [
         { title },
@@ -84,7 +87,7 @@ function EmptyState({ kind }: { kind: "not_found" | "expired" | "error" }) {
     expired: {
       icon: Clock3,
       title: "Drop expired",
-      text: "This CODrop was available for 24 hours and is no longer accessible.",
+      text: "This CODrop is no longer accessible.",
     },
     error: {
       icon: SearchX,
@@ -111,6 +114,7 @@ function DropPage() {
   const drop = Route.useLoaderData();
   const { code } = Route.useParams();
   const router = useRouter();
+  const { openShare, flow } = useShareFlow();
 
   if (drop.state === "not_found")
     return (
@@ -153,6 +157,19 @@ function DropPage() {
       </div>
 
       <SharedDropViewer drop={drop} />
+
+      {/* Share another */}
+      <div className="mt-14 border-t border-border pt-10">
+        <p className="mb-5 text-center text-sm font-medium text-muted-foreground">
+          Share another
+        </p>
+        <ShareOptions
+          compact
+          onSelect={(kind: ShareKind) => openShare(kind)}
+        />
+      </div>
+
+      {flow}
     </DropShell>
   );
 }

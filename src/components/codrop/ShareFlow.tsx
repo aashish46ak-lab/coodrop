@@ -1,18 +1,19 @@
 import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 
 import type { CreatedDrop } from "@/lib/create-drop";
 import { ShareFileModal } from "./ShareFileModal";
 import { ShareTextModal } from "./ShareTextModal";
-import { SuccessDialog } from "./SuccessDialog";
 import type { ShareKind } from "./ShareOptions";
 
 export function useShareFlow() {
+  const navigate = useNavigate();
   const [active, setActive] = useState<ShareKind | null>(null);
-  const [created, setCreated] = useState<CreatedDrop | null>(null);
 
   function handleCreated(drop: CreatedDrop) {
     setActive(null);
-    setCreated(drop);
+    // Open the shared drop page immediately
+    void navigate({ to: "/drop/$code", params: { code: drop.code } });
   }
 
   const flow = (
@@ -34,20 +35,6 @@ export function useShareFlow() {
         onOpenChange={(open) => setActive(open ? "video" : null)}
         onCreated={handleCreated}
       />
-      {created ? (
-        <SuccessDialog
-          open
-          code={created.code}
-          expiresAt={created.expiresAt}
-          onOpenChange={(open) => {
-            if (!open) setCreated(null);
-          }}
-          onShareAnother={(kind) => {
-            setCreated(null);
-            setActive(kind);
-          }}
-        />
-      ) : null}
     </>
   );
 

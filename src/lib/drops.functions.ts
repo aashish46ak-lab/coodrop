@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { createClient } from "@supabase/supabase-js";
 
 export type DropResult =
   | { state: "not_found" }
@@ -17,9 +18,29 @@ export type DropResult =
       expiresAt: string;
     };
 
+function getPublicSupabase() {
+  const url =
+    process.env["SUPABASE_URL"] ||
+    process.env["VITE_SUPABASE_URL"] ||
+    "";
+  const key =
+    process.env["SUPABASE_PUBLISHABLE_KEY"] ||
+    process.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ||
+    process.env["SUPABASE_ANON_KEY"] ||
+    "";
+
+  if (!url || !key) {
+    throw new Error("missing_supabase_env");
+  }
+
+  return createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
 /**
- * Public read of a drop by share code. Expired drops are never returned with
- * their content — the database row is also hidden by row level security.
+ * Public read of a drop by share code.
+ * Uses anon/publishable key + RLS (no service role required).
  */
 export const getDrop = createServerFn({ method: "GET" })
   .inputValidator((data: { code: string }) => {
@@ -28,9 +49,10 @@ export const getDrop = createServerFn({ method: "GET" })
     return { code: `CO${match[1]!.toLowerCase()}${match[2]}` };
   })
   .handler(async ({ data }): Promise<DropResult> => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const supabase = getPublicSupabase();
 
-    const { data: row, error } = await supabaseAdmin
+    // Try exact code first
+    let { data: row, error } = await supabase
       .from("shared_drops")
       .select(
         "code, type, content, storage_path, original_filename, mime_type, file_size, created_at, expires_at, status, metadata",
@@ -38,7 +60,23 @@ export const getDrop = createServerFn({ method: "GET" })
       .eq("code", data.code)
       .maybeSingle();
 
-    if (error) throw new Error("lookup_failed");
+    // Fallback: case variants (older rows)
+    if (!row && !error) {
+      const alt = await supabase
+        .from("shared_drops")
+        .select(
+          "code, type, content, storage_path, original_filename, mime_type, file_size, created_at, expires_at, status, metadata",
+        )
+        .ilike("code", data.code)
+        .maybeSingle();
+      row = alt.data;
+      error = alt.error;
+    }
+
+    if (error) {
+      console.error("[CODrop] getDrop error:", error);
+      throw new Error("lookup_failed");
+    }
     if (!row) return { state: "not_found" };
 
     const expired = new Date(row.expires_at).getTime() <= Date.now();
@@ -46,11 +84,9 @@ export const getDrop = createServerFn({ method: "GET" })
 
     let fileUrl: string | null = null;
     if (row.storage_path) {
-      const { data: signed } = await supabaseAdmin.storage
+      const { data: signed } = await supabase.storage
         .from("drops")
-        .createSignedUrl(row.storage_path, 60 * 60, {
-          download: false,
-        });
+        .createSignedUrl(row.storage_path, 60 * 60);
       fileUrl = signed?.signedUrl ?? null;
     }
 

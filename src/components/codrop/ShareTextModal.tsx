@@ -50,7 +50,7 @@ export function ShareTextModal({
         <DialogHeader>
           <DialogTitle>Share Text</DialogTitle>
           <DialogDescription>
-            Paste notes, source code, logs, JSON, Markdown or links. Long content is welcome.
+            Paste notes, source code, logs, JSON, Markdown or links.
           </DialogDescription>
         </DialogHeader>
 
@@ -63,7 +63,7 @@ export function ShareTextModal({
               id="drop-title"
               value={title}
               onChange={(e) => setTitle(e.target.value.slice(0, 120))}
-              placeholder="e.g. Meeting notes, API config, bug log..."
+              placeholder="e.g. Meeting notes, API config..."
               maxLength={120}
               disabled={busy}
               className="h-10"
@@ -87,7 +87,6 @@ export function ShareTextModal({
               <span className={tooLong ? "text-destructive" : undefined}>
                 {text.length.toLocaleString()} / {CODROP.maxTextLength.toLocaleString()} characters
               </span>
-              <span>Expires 24h after sharing</span>
             </div>
           </div>
         </div>
@@ -121,7 +120,7 @@ export function ShareTextModal({
               {busy ? (
                 <>
                   <Loader2 className="mr-1.5 h-4 w-4 animate-spin" aria-hidden="true" />
-                  Creating your drop...
+                  Creating...
                 </>
               ) : (
                 "Share Text"

@@ -14,7 +14,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Temporarily share text, images and videos with a simple code. Every drop expires after 24 hours. Free, anonymous, no signup.",
+          "Temporarily share text, images and videos with a simple code. Free, anonymous, no signup.",
       },
       {
         name: "keywords",
@@ -24,8 +24,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "CODrop — Share Anything. Get a Code." },
       {
         property: "og:description",
-        content:
-          "Temporarily share text, images and videos with a simple code. Every drop expires after 24 hours.",
+        content: "Share text, images and videos with a simple code.",
       },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "CODrop" },
@@ -33,7 +32,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:title", content: "CODrop — Share Anything. Get a Code." },
       {
         name: "twitter:description",
-        content: "Share text, photos and videos with a temporary code. Expires in 24 hours.",
+        content: "Share text, photos and videos with a temporary code.",
       },
     ],
   }),
@@ -62,11 +61,10 @@ function Index() {
             Share anything. Get a code.
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Drop text, photos, videos and more. Get a temporary code and share it instantly.
+            Drop text, photos, videos and more. Get a code and share it instantly.
           </p>
         </section>
 
-        {/* Compact search — top right, just above share cards */}
         <div className="mt-8 flex justify-end sm:mt-10">
           <CodeSearchIsland compact />
         </div>
