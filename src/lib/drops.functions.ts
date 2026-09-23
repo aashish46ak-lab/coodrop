@@ -24,7 +24,7 @@ export const getDrop = createServerFn({ method: "GET" })
   .inputValidator((data: { code: string }) => {
     const match = String(data?.code ?? "").match(/^co([a-zA-Z])(\d{2})$/i);
     if (!match) throw new Error("invalid_code");
-    return { code: `CO${match[1].toLowerCase()}${match[2]}` };
+    return { code: `CO${match[1]!.toLowerCase()}${match[2]}` };
   })
   .handler(async ({ data }): Promise<DropResult> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

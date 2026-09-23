@@ -30,11 +30,11 @@ async function insertDrop(args: {
 }): Promise<CreatedDrop> {
   const { data, error } = await supabase.rpc("create_drop", {
     p_type: args.type,
-    p_content: args.content ?? null,
-    p_storage_path: args.storagePath ?? null,
-    p_original_filename: args.originalFilename ?? null,
-    p_mime_type: args.mimeType ?? null,
-    p_file_size: args.fileSize ?? null,
+    p_content: args.content ?? undefined,
+    p_storage_path: args.storagePath ?? undefined,
+    p_original_filename: args.originalFilename ?? undefined,
+    p_mime_type: args.mimeType ?? undefined,
+    p_file_size: args.fileSize ?? undefined,
   });
 
   if (error) throw new Error(friendly(error.message ?? ""));

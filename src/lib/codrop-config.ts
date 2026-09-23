@@ -42,5 +42,5 @@ export function normalizeCode(raw: string): string {
   const cleaned = raw.trim().replace(/\s+/g, "");
   const match = cleaned.match(/^co([a-zA-Z])(\d{2})$/i);
   if (!match) return "";
-  return `CO${match[1].toLowerCase()}${match[2]}`;
+  return `CO${match[1]!.toLowerCase()}${match[2]}`;
 }

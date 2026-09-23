@@ -111,7 +111,7 @@ export function ShareOptions({
           description={option.description}
           icon={option.icon}
           iconClass={option.iconClass}
-          compact={compact}
+          compact={!!compact}
           onClick={() => onSelect(option.kind)}
         />
       ))}
