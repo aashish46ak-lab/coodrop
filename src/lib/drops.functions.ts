@@ -7,6 +7,7 @@ export type DropResult =
       state: "ok";
       code: string;
       type: "text" | "image" | "video";
+      title: string | null;
       content: string | null;
       fileUrl: string | null;
       originalFilename: string | null;
@@ -32,7 +33,7 @@ export const getDrop = createServerFn({ method: "GET" })
     const { data: row, error } = await supabaseAdmin
       .from("shared_drops")
       .select(
-        "code, type, content, storage_path, original_filename, mime_type, file_size, created_at, expires_at, status",
+        "code, type, content, storage_path, original_filename, mime_type, file_size, created_at, expires_at, status, metadata",
       )
       .eq("code", data.code)
       .maybeSingle();
@@ -53,10 +54,17 @@ export const getDrop = createServerFn({ method: "GET" })
       fileUrl = signed?.signedUrl ?? null;
     }
 
+    const meta = (row.metadata ?? {}) as { title?: string };
+    const title =
+      typeof meta.title === "string" && meta.title.trim()
+        ? meta.title.trim().slice(0, 120)
+        : null;
+
     return {
       state: "ok",
       code: row.code,
       type: row.type as "text" | "image" | "video",
+      title,
       content: row.content ?? null,
       fileUrl,
       originalFilename: row.original_filename ?? null,

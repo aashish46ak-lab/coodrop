@@ -17,10 +17,17 @@ export const Route = createFileRoute("/drop/$code")({
       return { state: "not_found" };
     }
   },
-  head: ({ params }) => {
-    const title = `Shared Drop ${params.code} — CODrop`;
+  head: ({ params, loaderData }) => {
+    const drop = loaderData as DropResult | undefined;
+    const titleLabel =
+      drop && drop.state === "ok" && drop.title
+        ? drop.title
+        : `Shared Drop ${params.code}`;
+    const title = `${titleLabel} — CODrop`;
     const description =
-      "Open a CODrop share code to view, copy or download temporarily shared content.";
+      drop && drop.state === "ok" && drop.title
+        ? `${drop.title} · Temporary CODrop share. Expires in 24 hours.`
+        : "Open a CODrop share code to view, copy or download temporarily shared content.";
     return {
       meta: [
         { title },
@@ -32,8 +39,16 @@ export const Route = createFileRoute("/drop/$code")({
     };
   },
   component: DropPage,
-  errorComponent: () => <DropShell><EmptyState kind="error" /></DropShell>,
-  notFoundComponent: () => <DropShell><EmptyState kind="not_found" /></DropShell>,
+  errorComponent: () => (
+    <DropShell>
+      <EmptyState kind="error" />
+    </DropShell>
+  ),
+  notFoundComponent: () => (
+    <DropShell>
+      <EmptyState kind="not_found" />
+    </DropShell>
+  ),
   pendingComponent: () => (
     <DropShell>
       <p className="py-16 text-center text-sm text-muted-foreground">Loading shared content...</p>
@@ -97,8 +112,18 @@ function DropPage() {
   const { code } = Route.useParams();
   const router = useRouter();
 
-  if (drop.state === "not_found") return <DropShell><EmptyState kind="not_found" /></DropShell>;
-  if (drop.state === "expired") return <DropShell><EmptyState kind="expired" /></DropShell>;
+  if (drop.state === "not_found")
+    return (
+      <DropShell>
+        <EmptyState kind="not_found" />
+      </DropShell>
+    );
+  if (drop.state === "expired")
+    return (
+      <DropShell>
+        <EmptyState kind="expired" />
+      </DropShell>
+    );
 
   return (
     <DropShell>
@@ -106,6 +131,11 @@ function DropPage() {
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">
           Shared Drop
         </p>
+        {drop.title ? (
+          <h1 className="max-w-xl text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+            {drop.title}
+          </h1>
+        ) : null}
         <div className="flex items-center gap-2">
           <span className="rounded-xl bg-[#0B0D10] px-4 py-2 font-mono text-lg font-semibold tracking-[0.1em] text-white">
             {code}
@@ -119,10 +149,7 @@ function DropPage() {
             <Copy className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
-        <ExpirationTimer
-          expiresAt={drop.expiresAt}
-          onExpired={() => void router.invalidate()}
-        />
+        <ExpirationTimer expiresAt={drop.expiresAt} onExpired={() => void router.invalidate()} />
       </div>
 
       <SharedDropViewer drop={drop} />
