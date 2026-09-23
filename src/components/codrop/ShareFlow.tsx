@@ -4,24 +4,36 @@ import { toast } from "sonner";
 
 import type { CreatedDrop } from "@/lib/create-drop";
 import { saveRecentDrop } from "@/lib/recent-drops";
+import { addToSessionFolder } from "@/lib/session-folder";
 import { ShareFileModal } from "./ShareFileModal";
 import { ShareTextModal } from "./ShareTextModal";
 import type { ShareKind } from "./ShareOptions";
 
-export function useShareFlow() {
+export function useShareFlow(opts?: { stayOnFolder?: boolean }) {
   const navigate = useNavigate();
   const [active, setActive] = useState<ShareKind | null>(null);
 
   function handleCreated(drop: CreatedDrop & { type?: ShareKind }) {
     setActive(null);
+    const type = drop.type ?? "text";
     saveRecentDrop({
       code: drop.code,
       expiresAt: drop.expiresAt,
-      type: drop.type ?? "text",
+      type,
       title: drop.title,
     });
-    toast.success(`Shared · ${drop.code} · batch ${drop.batchCode}`);
-    void navigate({ to: "/drop/$code", params: { code: drop.code } });
+    addToSessionFolder(
+      {
+        code: drop.code,
+        title: drop.title,
+        type,
+        expiresAt: drop.expiresAt,
+      },
+      drop.batchCode,
+    );
+    toast.success(`Shared · ${drop.code}`);
+    // Stay on folder session until refresh
+    void navigate({ to: "/folder/$code", params: { code: drop.batchCode } });
   }
 
   const flow = (

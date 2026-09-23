@@ -1,17 +1,10 @@
-import { Copy, Download, Loader2, Maximize2 } from "lucide-react";
+import { Copy, Download, Loader2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { copyToClipboard, downloadTextFile, triggerDownload } from "@/lib/clipboard";
 import type { DropResult } from "@/lib/drops.functions";
-import { ExpirationTimer } from "./ExpirationTimer";
 
 type OkDrop = Extract<DropResult, { state: "ok" }>;
 
@@ -26,7 +19,7 @@ export function SharedPreviewDialog({
 }) {
   const [busy, setBusy] = useState(false);
 
-  if (!drop) return null;
+  if (!open || !drop) return null;
 
   const title = drop.title?.trim() || drop.code;
 
@@ -48,92 +41,83 @@ export function SharedPreviewDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl gap-4">
-        <DialogHeader className="space-y-2 text-left">
-          <DialogTitle className="text-lg leading-snug">{title}</DialogTitle>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-lg bg-[#0B0D10] px-2.5 py-1 font-mono text-xs font-semibold tracking-wide text-white">
-              {drop.code}
-            </span>
-            <ExpirationTimer expiresAt={drop.expiresAt} />
-          </div>
-        </DialogHeader>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-[5%] sm:p-[8%]"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+    >
+      {/* Blur backdrop */}
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/40 backdrop-blur-md"
+        aria-label="Close"
+        onClick={() => onOpenChange(false)}
+      />
 
-        {/* Actions under title */}
-        <div className="flex flex-wrap gap-2">
-          {drop.type === "text" ? (
-            <>
+      {/* Centered panel ~10% margin */}
+      <div className="relative z-10 flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-card shadow-2xl">
+        {/* Header row */}
+        <div className="flex items-start justify-between gap-3 border-b border-border px-4 py-3 sm:px-5">
+          <div className="min-w-0 rounded-xl bg-secondary/80 px-3 py-2">
+            <p className="truncate text-sm font-semibold text-foreground">{title}</p>
+            <p className="font-mono text-[11px] text-muted-foreground">{drop.code}</p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            {drop.type === "text" ? (
               <Button
                 size="sm"
                 onClick={() => void copyToClipboard(drop.content ?? "", "Text copied")}
               >
-                <Copy className="mr-1.5 h-4 w-4" aria-hidden="true" />
-                Copy all
+                <Copy className="mr-1.5 h-3.5 w-3.5" />
+                Copy
               </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => downloadTextFile(drop.content ?? "", `${drop.code}.txt`)}
-              >
-                <Download className="mr-1.5 h-4 w-4" aria-hidden="true" />
-                Download .txt
-              </Button>
-            </>
-          ) : (
-            <>
+            ) : (
               <Button size="sm" disabled={busy || !drop.fileUrl} onClick={() => void downloadFile()}>
                 {busy ? (
-                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" aria-hidden="true" />
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  <Download className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                  <Download className="mr-1.5 h-3.5 w-3.5" />
                 )}
                 Download
               </Button>
-              {drop.fileUrl ? (
-                <Button size="sm" variant="outline" asChild>
-                  <a href={drop.fileUrl} target="_blank" rel="noopener noreferrer">
-                    <Maximize2 className="mr-1.5 h-4 w-4" aria-hidden="true" />
-                    Open full
-                  </a>
-                </Button>
-              ) : null}
-            </>
-          )}
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => void copyToClipboard(drop.code, "Code copied")}
-          >
-            <Copy className="mr-1.5 h-4 w-4" aria-hidden="true" />
-            Copy code
-          </Button>
+            )}
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8"
+              onClick={() => onOpenChange(false)}
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
-        {/* Content */}
-        <div className="max-h-[55vh] overflow-auto rounded-xl border border-border bg-[#0B0D10]">
+        {/* Body */}
+        <div className="m-3 overflow-auto rounded-xl border border-border bg-[#0B0D10] sm:m-4">
           {drop.type === "text" ? (
-            <pre className="whitespace-pre-wrap break-words p-4 font-mono text-sm leading-relaxed text-white/90">
+            <pre className="max-h-[60vh] whitespace-pre-wrap break-words p-4 font-mono text-sm leading-relaxed text-white/90">
               {drop.content ?? ""}
             </pre>
           ) : drop.type === "image" && drop.fileUrl ? (
             <img
               src={drop.fileUrl}
               alt={title}
-              className="mx-auto max-h-[50vh] w-auto max-w-full object-contain"
+              className="mx-auto max-h-[60vh] w-auto max-w-full object-contain"
             />
           ) : drop.fileUrl ? (
             <video
               src={drop.fileUrl}
               controls
               playsInline
-              className="mx-auto max-h-[50vh] w-full"
+              className="mx-auto max-h-[60vh] w-full"
             />
           ) : (
-            <p className="p-6 text-center text-sm text-white/60">Content unavailable.</p>
+            <p className="p-8 text-center text-sm text-white/60">Content unavailable.</p>
           )}
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
