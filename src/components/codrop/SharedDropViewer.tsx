@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Copy, Download, Loader2, Maximize2, TextSelect } from "lucide-react";
+import { Copy, Download, Link2, Loader2, Maximize2, TextSelect } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,11 @@ import { formatBytes } from "@/lib/codrop-config";
 import type { DropResult } from "@/lib/drops.functions";
 
 type OkDrop = Extract<DropResult, { state: "ok" }>;
+
+function shareUrl(code: string) {
+  if (typeof window === "undefined") return `/drop/${code}`;
+  return `${window.location.origin}/drop/${code}`;
+}
 
 function TextViewer({ drop }: { drop: OkDrop }) {
   const content = drop.content ?? "";
@@ -37,6 +42,14 @@ function TextViewer({ drop }: { drop: OkDrop }) {
         >
           <Download className="mr-1.5 h-4 w-4" aria-hidden="true" />
           Download .txt
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => void copyToClipboard(shareUrl(drop.code), "Link copied")}
+        >
+          <Link2 className="mr-1.5 h-4 w-4" aria-hidden="true" />
+          Copy link
         </Button>
         <Button size="sm" variant="ghost" onClick={selectAll}>
           <TextSelect className="mr-1.5 h-4 w-4" aria-hidden="true" />
@@ -86,7 +99,7 @@ function useFileDownload(drop: OkDrop) {
       triggerDownload(url, drop.originalFilename ?? drop.code);
       window.setTimeout(() => URL.revokeObjectURL(url), 2000);
     } catch {
-      toast.error("We couldn't download that file. Please try again.");
+      toast.error("Could not download that file. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -115,6 +128,14 @@ function FileActions({ drop }: { drop: OkDrop }) {
           </a>
         </Button>
       ) : null}
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => void copyToClipboard(shareUrl(drop.code), "Link copied")}
+      >
+        <Link2 className="mr-1.5 h-4 w-4" aria-hidden="true" />
+        Copy link
+      </Button>
       <Button
         size="sm"
         variant="ghost"
