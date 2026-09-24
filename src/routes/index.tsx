@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { BrandHeader } from "@/components/codrop/Logo";
@@ -8,6 +9,7 @@ import { HowItWorks } from "@/components/codrop/HowItWorks";
 import { Footer } from "@/components/codrop/Footer";
 import { PwaInstallPrompt } from "@/components/codrop/PwaInstallPrompt";
 import { useShareFlow } from "@/components/codrop/ShareFlow";
+import { maybeCleanupExpired } from "@/lib/cleanup";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -55,6 +57,10 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { openShare, flow } = useShareFlow();
+
+  useEffect(() => {
+    void maybeCleanupExpired();
+  }, []);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
