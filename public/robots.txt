@@ -13,4 +13,4 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-Sitemap: https://codrop.vercel.app/sitemap.xml
+Sitemap: https://sharetemp.vercel.app/sitemap.xml

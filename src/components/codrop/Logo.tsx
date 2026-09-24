@@ -1,42 +1,38 @@
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
-/** Brand mark: droplet with code brackets inside the O position */
+/** ShareTemp molecular network mark */
 export function DropMark({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 40 48"
-      className={cn("h-9 w-7", className)}
+      viewBox="0 0 48 48"
+      className={cn("h-9 w-9", className)}
       role="img"
-      aria-label="CODrop"
+      aria-label="ShareTemp"
     >
       <defs>
-        <linearGradient id="codrop-drop" x1="20" y1="0" x2="20" y2="48" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#67e8f9" />
-          <stop offset="0.5" stopColor="#22d3ee" />
-          <stop offset="1" stopColor="#a5f3fc" />
+        <linearGradient id="st-mark" x1="8" y1="6" x2="40" y2="42" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#22d3ee" />
+          <stop offset="0.45" stopColor="#3b82f6" />
+          <stop offset="1" stopColor="#1e40af" />
         </linearGradient>
       </defs>
-      <path
-        d="M20 2C20 2 34 18 34 28c0 7.7-6.3 14-14 14S6 35.7 6 28C6 18 20 2 20 2z"
-        fill="url(#codrop-drop)"
-      />
-      <text
-        x="20"
-        y="30"
-        textAnchor="middle"
-        fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-        fontSize="11"
-        fontWeight="600"
-        fill="#0B0D10"
-      >
-        {"</>"}
-      </text>
+      <line x1="24" y1="22" x2="12" y2="10" stroke="url(#st-mark)" strokeWidth="3" strokeLinecap="round" />
+      <line x1="24" y1="22" x2="38" y2="14" stroke="url(#st-mark)" strokeWidth="3" strokeLinecap="round" />
+      <line x1="24" y1="22" x2="16" y2="38" stroke="url(#st-mark)" strokeWidth="3" strokeLinecap="round" />
+      <circle cx="24" cy="22" r="6" fill="url(#st-mark)" />
+      <circle cx="24" cy="22" r="2.6" fill="#fff" opacity="0.9" />
+      <circle cx="12" cy="10" r="4.2" fill="url(#st-mark)" />
+      <circle cx="12" cy="10" r="1.8" fill="#fff" opacity="0.85" />
+      <circle cx="38" cy="14" r="4.2" fill="url(#st-mark)" />
+      <circle cx="38" cy="14" r="1.8" fill="#fff" opacity="0.85" />
+      <circle cx="16" cy="38" r="4.2" fill="url(#st-mark)" />
+      <circle cx="16" cy="38" r="1.8" fill="#fff" opacity="0.85" />
     </svg>
   );
 }
 
-/** Full wordmark: C + droplet + DROP */
+/** Full wordmark: mark + ShareTemp */
 export function CodropWordmark({
   className,
   size = "md",
@@ -44,20 +40,23 @@ export function CodropWordmark({
   className?: string;
   size?: "sm" | "md" | "lg";
 }) {
-  const text = size === "lg" ? "text-3xl" : size === "sm" ? "text-xl" : "text-2xl";
-  const mark = size === "lg" ? "h-10 w-8" : size === "sm" ? "h-7 w-5" : "h-9 w-7";
+  const text =
+    size === "lg" ? "text-2xl sm:text-3xl" : size === "sm" ? "text-lg" : "text-xl";
+  const mark = size === "lg" ? "h-10 w-10" : size === "sm" ? "h-7 w-7" : "h-8 w-8";
 
   return (
-    <span className={cn("inline-flex items-center gap-0.5", className)}>
-      <span className={cn("font-bold tracking-tight text-[#0B0D10]", text)}>C</span>
+    <span className={cn("inline-flex items-center gap-2", className)}>
       <DropMark className={mark} />
-      <span className={cn("font-bold tracking-tight text-[#0B0D10]", text)}>DROP</span>
+      <span className={cn("font-bold tracking-tight text-[#1e40af]", text)}>ShareTemp</span>
     </span>
   );
 }
 
+/** Preferred alias */
+export const ShareTempWordmark = CodropWordmark;
+
 export function BrandHeader({
-  tagline = "Share. Drop. Done.",
+  tagline = "Share temporarily. Keep it simple.",
   className,
 }: {
   tagline?: string | null;
@@ -65,11 +64,14 @@ export function BrandHeader({
 }) {
   return (
     <header className={cn("flex flex-col items-center gap-2 text-center", className)}>
-      <Link to="/" className="inline-flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg">
+      <Link
+        to="/"
+        className="inline-flex items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
         <CodropWordmark size="lg" />
       </Link>
       {tagline ? (
-        <p className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+        <p className="text-[0.7rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           {tagline}
         </p>
       ) : null}

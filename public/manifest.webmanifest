@@ -1,13 +1,13 @@
 {
-  "name": "CODrop — Temporary File Share",
-  "short_name": "CODrop",
-  "description": "Free temporary file share. Share text, images and videos with a short code. Anonymous, no signup.",
+  "name": "ShareTemp",
+  "short_name": "ShareTemp",
+  "description": "Temporary file and content sharing",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#f8fafc",
-  "theme_color": "#0B0D10",
+  "theme_color": "#1e40af",
   "categories": ["utilities", "productivity"],
   "lang": "en",
   "icons": [
