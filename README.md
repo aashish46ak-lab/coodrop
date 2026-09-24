@@ -1,20 +1,26 @@
-# CODrop
+# ShareTemp
 
-**Share anything. Get a code.**
+**Share temporarily. Keep it simple.**
 
-Temporary anonymous sharing for text, images, and videos.  
-Every drop expires after 24 hours.
+Temporary anonymous sharing for text, images, videos, and folders.  
+Every share expires automatically (default 24 hours).
+
+Live: [https://sharetemp.vercel.app](https://sharetemp.vercel.app)
 
 ## Features
 
 - Share long text / code snippets
 - Share images (JPG, PNG, WEBP, GIF)
 - Share videos (MP4, WEBM, MOV, and more)
-- Unique short codes (`COf26` style)
-- 24-hour automatic expiration (enforced in database)
+- Folder multi-share sessions
+- Unique short codes:
+  - **File:** `ST` + letter + 2 digits (e.g. `STa23`)
+  - **Folder:** `SHR` + letter + 2 digits (e.g. `SHRa23`)
+- Optional title + password
+- Automatic expiration
 - No accounts required
-- Copy and download support
-- Modern minimal UI
+- Offline-aware UI, PWA install
+- Client-side malware heuristics on upload
 
 ## Stack
 
@@ -49,12 +55,11 @@ VITE_MAX_VIDEO_MB=200
 ### 3. Supabase
 
 1. Create a Supabase project
-2. Run the migration in `supabase/migrations/` (SQL Editor or CLI)
+2. Run the migrations in `supabase/migrations/` (SQL Editor or CLI)
 3. Create a **private** storage bucket named `drops`
 4. Allow anon uploads to that bucket
 
-Code format: `CO` + one letter + two digits  
-Examples: `COf26`, `COr45`, `COx81`
+**Important:** Run the latest migration `20260924200000_sharetemp_ids.sql` so new shares get `ST*` / `SHR*` codes. Legacy `CO*` / `COD*` links still resolve.
 
 ### 4. Run locally
 
@@ -64,22 +69,23 @@ npm run dev
 
 ### 5. Deploy
 
-Deploy to Vercel (or any host that supports Vite / TanStack Start).  
+Deploy to Vercel. Domain: **sharetemp.vercel.app**  
 Add the same environment variables in project settings.
 
 ## How it works
 
-1. **Drop** — share text, image, or video  
-2. **Get a code** — unique temporary code is generated  
-3. **Share** — send the code to anyone  
-4. After 24 hours the drop is no longer accessible
+1. **Share** — text, image, video, or multiple files in a folder  
+2. **Get a code** — short temporary code is generated  
+3. **Send the code** — anyone can open it  
+4. After expiry the content is no longer accessible
 
 ## Routes
 
 | Path | Description |
 |------|-------------|
 | `/` | Homepage — share + search |
-| `/drop/:code` | View a shared drop |
+| `/drop/:code` | View a shared file |
+| `/batch/:code` | View a folder session |
 | `/privacy` | Privacy |
 | `/terms` | Terms |
 
