@@ -26,11 +26,11 @@ function isIosDevice() {
   );
 }
 
-/** Top-right Install button + centered blur modal */
+/** Permanent top Install button + centered blur modal */
 export function PwaInstallPrompt() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [canShowButton, setCanShowButton] = useState(false);
+  const [installed, setInstalled] = useState(false);
 
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -38,11 +38,9 @@ export function PwaInstallPrompt() {
     }
 
     if (isStandalone()) {
-      setCanShowButton(false);
+      setInstalled(true);
       return;
     }
-
-    setCanShowButton(true);
 
     function onBip(e: Event) {
       e.preventDefault();
@@ -50,10 +48,9 @@ export function PwaInstallPrompt() {
     }
     window.addEventListener("beforeinstallprompt", onBip);
 
-    // Auto-show centered modal once (if not dismissed)
     try {
       if (localStorage.getItem(DISMISS_KEY) !== "1") {
-        const t = window.setTimeout(() => setModalOpen(true), 1800);
+        const t = window.setTimeout(() => setModalOpen(true), 2000);
         return () => {
           window.removeEventListener("beforeinstallprompt", onBip);
           window.clearTimeout(t);
@@ -66,14 +63,12 @@ export function PwaInstallPrompt() {
     return () => window.removeEventListener("beforeinstallprompt", onBip);
   }, []);
 
-  function dismissModal(permanent = true) {
+  function dismissModal() {
     setModalOpen(false);
-    if (permanent) {
-      try {
-        localStorage.setItem(DISMISS_KEY, "1");
-      } catch {
-        // ignore
-      }
+    try {
+      localStorage.setItem(DISMISS_KEY, "1");
+    } catch {
+      // ignore
     }
   }
 
@@ -82,53 +77,50 @@ export function PwaInstallPrompt() {
       await deferred.prompt();
       const choice = await deferred.userChoice;
       setDeferred(null);
-      dismissModal(true);
-      if (choice.outcome === "accepted") setCanShowButton(false);
+      dismissModal();
+      if (choice.outcome === "accepted") setInstalled(true);
       return;
     }
-    // iOS / no deferred: keep modal open with instructions
   }
 
   const ios = isIosDevice();
 
   return (
     <>
-      {/* Top Install button */}
-      {canShowButton ? (
-        <div className="pointer-events-none fixed inset-x-0 top-0 z-[55] flex justify-end p-3 sm:p-4">
-          <Button
+      {/* ALWAYS visible top-right Install (unless already installed as app) */}
+      {!installed ? (
+        <div className="fixed right-3 top-3 z-[80] sm:right-5 sm:top-4">
+          <button
             type="button"
-            size="sm"
-            className="pointer-events-auto h-9 gap-1.5 rounded-full bg-[#0B0D10] px-3.5 text-white shadow-md hover:bg-[#0B0D10]/90"
             onClick={() => setModalOpen(true)}
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-white px-4 text-sm font-semibold text-[#0B0D10] shadow-lg ring-1 ring-black/5 transition hover:bg-secondary active:scale-[0.98]"
           >
-            <Download className="h-3.5 w-3.5" aria-hidden="true" />
+            <Download className="h-4 w-4" aria-hidden="true" />
             Install
-          </Button>
+          </button>
         </div>
       ) : null}
 
-      {/* Centered modal + blurred rest of screen */}
       {modalOpen ? (
         <div
-          className="fixed inset-0 z-[70] flex items-center justify-center p-5"
+          className="fixed inset-0 z-[90] flex items-center justify-center p-5"
           role="dialog"
           aria-modal="true"
           aria-labelledby="pwa-install-title"
         >
           <button
             type="button"
-            className="absolute inset-0 bg-black/45 backdrop-blur-md"
+            className="absolute inset-0 bg-black/50 backdrop-blur-md"
             aria-label="Close"
-            onClick={() => dismissModal(true)}
+            onClick={dismissModal}
           />
 
-          <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl">
+          <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-white p-6 shadow-2xl">
             <button
               type="button"
               className="absolute right-3 top-3 rounded-lg p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground"
               aria-label="Close"
-              onClick={() => dismissModal(true)}
+              onClick={dismissModal}
             >
               <X className="h-4 w-4" />
             </button>
@@ -145,12 +137,12 @@ export function PwaInstallPrompt() {
             </h2>
             <p className="mt-2 text-center text-sm leading-relaxed text-muted-foreground">
               {ios && !deferred
-                ? "Tap the Share button, then choose Add to Home Screen for one-tap access."
+                ? "Tap Share, then Add to Home Screen for one-tap access."
                 : "Install CODrop for faster access from your home screen."}
             </p>
 
             {ios && !deferred ? (
-              <div className="mt-4 rounded-xl border border-border bg-secondary/40 px-3 py-3 text-left text-xs leading-relaxed text-muted-foreground">
+              <div className="mt-4 rounded-xl border border-border bg-secondary/50 px-3 py-3 text-left text-xs leading-relaxed text-muted-foreground">
                 <p className="flex items-center gap-1.5 font-medium text-foreground">
                   <Share className="h-3.5 w-3.5" /> iPhone / iPad
                 </p>
@@ -168,16 +160,12 @@ export function PwaInstallPrompt() {
                   <Download className="mr-1.5 h-4 w-4" />
                   Install app
                 </Button>
-              ) : ios ? (
-                <Button className="w-full" variant="secondary" onClick={() => dismissModal(true)}>
-                  Got it
-                </Button>
               ) : (
-                <Button className="w-full" variant="secondary" onClick={() => dismissModal(true)}>
-                  Not now
+                <Button className="w-full" variant="secondary" onClick={dismissModal}>
+                  {ios ? "Got it" : "Not now"}
                 </Button>
               )}
-              <Button variant="ghost" className="w-full" onClick={() => dismissModal(true)}>
+              <Button variant="ghost" className="w-full" onClick={dismissModal}>
                 Maybe later
               </Button>
             </div>

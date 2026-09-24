@@ -7,7 +7,6 @@ import { CodeSearchIsland } from "@/components/codrop/CodeSearchIsland";
 import { RecentShared } from "@/components/codrop/RecentShared";
 import { HowItWorks } from "@/components/codrop/HowItWorks";
 import { Footer } from "@/components/codrop/Footer";
-import { PwaInstallPrompt } from "@/components/codrop/PwaInstallPrompt";
 import { useShareFlow } from "@/components/codrop/ShareFlow";
 import { maybeCleanupExpired } from "@/lib/cleanup";
 
@@ -73,7 +72,7 @@ function Index() {
         className="pointer-events-none absolute inset-x-0 top-[6rem] h-[28rem] bg-[radial-gradient(38rem_18rem_at_78%_0%,rgba(34,211,238,0.10),transparent_70%)]"
       />
 
-      <main className="relative mx-auto w-full max-w-5xl px-5 pt-12 sm:pt-16">
+      <main className="relative mx-auto w-full max-w-5xl px-5 pt-14 sm:pt-16">
         <BrandHeader />
 
         <section className="mx-auto mt-12 max-w-2xl text-center sm:mt-16">
@@ -101,7 +100,6 @@ function Index() {
       </main>
 
       {flow}
-      <PwaInstallPrompt />
     </div>
   );
 }
