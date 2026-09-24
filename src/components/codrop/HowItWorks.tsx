@@ -3,18 +3,18 @@ import { KeyRound, Send, UploadCloud } from "lucide-react";
 const STEPS = [
   {
     icon: UploadCloud,
-    title: "Drop",
-    text: "Share text, images or videos — free temporary file share, no account.",
+    title: "Share",
+    text: "Upload text, images or videos — free temporary share, no account.",
   },
   {
     icon: KeyRound,
     title: "Get a code",
-    text: "CODrop creates a unique short code for your drop (e.g. COf26).",
+    text: "ShareTemp creates a short code for your content (e.g. STa23).",
   },
   {
     icon: Send,
-    title: "Share",
-    text: "Send the code to anyone. They open it online — then it expires.",
+    title: "Send",
+    text: "Send the code to anyone. They open it — then it expires.",
   },
 ];
 
@@ -25,10 +25,10 @@ export function HowItWorks() {
         id="how-it-works"
         className="text-center text-base font-semibold tracking-tight text-foreground sm:text-lg"
       >
-        How CODrop works
+        How ShareTemp works
       </h2>
       <p className="mx-auto mt-1.5 max-w-md text-center text-xs text-muted-foreground sm:text-sm">
-        Simple temporary share — codedrop style, built for phones and desktop.
+        Simple temporary sharing — built for phones and desktop.
       </p>
 
       <ol className="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-3 sm:gap-4">

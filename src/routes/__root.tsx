@@ -16,7 +16,7 @@ import { OfflineBanner } from "@/components/codrop/OfflineBanner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
-const SITE_URL = "https://codrop.vercel.app";
+const SITE_URL = "https://sharetemp.vercel.app";
 
 function NotFoundComponent() {
   return (
@@ -87,36 +87,35 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "width=device-width, initial-scale=1, viewport-fit=cover",
       },
       {
-        title:
-          "CODrop — Free Temporary File Share | Share Text, Images & Videos with a Code",
+        title: "ShareTemp — Temporary File & Content Sharing",
       },
       {
         name: "description",
         content:
-          "Temporarily share text, images and videos with a simple code. Free temporary file share, online file share and codedrop-style sharing. Anonymous, no signup.",
+          "ShareTemp lets you temporarily share files, text, photos, videos and folders with simple shareable links.",
       },
       {
         name: "keywords",
         content:
-          "codedrop, CODrop, file share, temporary file share, temporary share, online file share, anonymous file share, share with code",
+          "ShareTemp, temporary file share, temporary share, online file share, share text, share photos, share videos",
       },
-      { name: "author", content: "CODrop" },
-      { name: "theme-color", content: "#0B0D10" },
-      { property: "og:title", content: "CODrop — Share Anything. Get a Code." },
+      { name: "author", content: "ShareTemp" },
+      { name: "theme-color", content: "#1e40af" },
+      { property: "og:title", content: "ShareTemp — Temporary File & Content Sharing" },
       {
         property: "og:description",
         content:
-          "Free temporary file share. Drop text, photos or videos and get a short code. Anonymous, no signup.",
+          "ShareTemp lets you temporarily share files, text, photos, videos and folders with simple shareable links.",
       },
-      { property: "og:site_name", content: "CODrop" },
+      { property: "og:site_name", content: "ShareTemp" },
       { property: "og:type", content: "website" },
       { property: "og:url", content: SITE_URL },
       { property: "og:image", content: `${SITE_URL}/og.png` },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "CODrop — Share Anything. Get a Code." },
+      { name: "twitter:title", content: "ShareTemp — Temporary File & Content Sharing" },
       {
         name: "twitter:description",
-        content: "Temporary file share with a simple code. Free & anonymous.",
+        content: "Temporarily share files, text, photos and videos with simple links.",
       },
       { name: "twitter:image", content: `${SITE_URL}/og.png` },
     ],

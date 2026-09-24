@@ -3,7 +3,7 @@ import { Download, Share, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-const DISMISS_KEY = "codrop_pwa_dismissed";
+const DISMISS_KEY = "sharetemp_pwa_dismissed";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -87,7 +87,6 @@ export function PwaInstallPrompt() {
 
   return (
     <>
-      {/* ALWAYS visible top-right Install (unless already installed as app) */}
       {!installed ? (
         <div className="fixed right-3 top-3 z-[80] sm:right-5 sm:top-4">
           <button
@@ -125,7 +124,7 @@ export function PwaInstallPrompt() {
               <X className="h-4 w-4" />
             </button>
 
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#0B0D10] text-white">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1e40af] text-white">
               <Download className="h-6 w-6" aria-hidden="true" />
             </div>
 
@@ -133,12 +132,12 @@ export function PwaInstallPrompt() {
               id="pwa-install-title"
               className="mt-4 text-center text-lg font-semibold tracking-tight text-foreground"
             >
-              Add CODrop to your phone?
+              Add ShareTemp to your phone?
             </h2>
             <p className="mt-2 text-center text-sm leading-relaxed text-muted-foreground">
               {ios && !deferred
                 ? "Tap Share, then Add to Home Screen for one-tap access."
-                : "Install CODrop for faster access from your home screen."}
+                : "Install ShareTemp for faster access from your home screen."}
             </p>
 
             {ios && !deferred ? (

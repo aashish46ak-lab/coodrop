@@ -21,7 +21,7 @@ export function CodeSearchIsland({
     event.preventDefault();
     const parsed = normalizeAnyCode(value);
     if (!parsed) {
-      setError("Use COe22 or batch CODr21");
+      setError("Use STa23 or folder SHRa23");
       return;
     }
     setError(null);
@@ -60,7 +60,7 @@ export function CodeSearchIsland({
           <button
             type="submit"
             disabled={busy}
-            aria-label="Open shared drop"
+            aria-label="Open shared item"
             className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-[#0B0D10] transition hover:scale-105 disabled:opacity-60"
           >
             {busy ? (
@@ -96,7 +96,7 @@ export function CodeSearchIsland({
             setValue(event.target.value);
             if (error) setError(null);
           }}
-          placeholder="Search share code (e.g. COf26)"
+          placeholder="Search share code (e.g. STa23)"
           autoComplete="off"
           spellCheck={false}
           maxLength={12}
@@ -107,8 +107,8 @@ export function CodeSearchIsland({
         <button
           type="submit"
           disabled={busy}
-          aria-label="Open shared drop"
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[#0B0D10] transition-transform active:scale-95 hover:scale-[1.04] disabled:opacity-60 sm:h-11 sm:w-11"
+          aria-label="Open shared item"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[#0B0D10] transition-transform active:scale-95 hover:scale-[1.04] disabled:opacity-60"
         >
           {busy ? (
             <Loader2 className="h-4.5 w-4.5 animate-spin" aria-hidden="true" />
