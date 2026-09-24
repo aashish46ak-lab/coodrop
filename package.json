@@ -4,13 +4,14 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "assets": "node scripts/write_pwa192.mjs; node scripts/write_pwa512.mjs; node scripts/write_og.mjs || true",
+    "assets": "node scripts/write_all_brand.mjs",
     "dev": "vite dev",
-    "build": "node scripts/write_pwa192.mjs; node scripts/write_pwa512.mjs; (node scripts/write_og.mjs || true); vite build",
+    "build": "node scripts/write_all_brand.mjs && vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "predev": "node scripts/write_all_brand.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"
