@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Download, Share, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { DropMark } from "@/components/codrop/Logo";
 
 const DISMISS_KEY = "sharetemp_pwa_dismissed";
 
@@ -124,8 +125,9 @@ export function PwaInstallPrompt() {
               <X className="h-4 w-4" />
             </button>
 
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1e40af] text-white">
-              <Download className="h-6 w-6" aria-hidden="true" />
+            {/* ShareTemp logo mark */}
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#f8fafc] ring-1 ring-border">
+              <DropMark className="h-11 w-11" />
             </div>
 
             <h2
