@@ -1,3 +1,9 @@
+/** ShareTemp app limits & ID helpers.
+ *  File codes: ST + letter + 2 digits (e.g. STa23)
+ *  Folder codes: SHR + letter + 2 digits (e.g. SHRa23)
+ *  Legacy (still resolvable): CO* / COD*
+ */
+
 function envNumber(value: string | undefined, fallback: number): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
@@ -5,6 +11,7 @@ function envNumber(value: string | undefined, fallback: number): number {
 
 const MB = 1024 * 1024;
 
+/** @deprecated Use SHARETEMP — kept as alias for existing imports */
 export const CODROP = {
   maxTextLength: envNumber(import.meta.env["VITE_MAX_TEXT_CHARS"], 500_000),
   maxImageBytes: envNumber(import.meta.env["VITE_MAX_IMAGE_MB"], 25) * MB,
@@ -25,6 +32,8 @@ export const CODROP = {
   ] as const,
 } as const;
 
+export const SHARETEMP = CODROP;
+
 export const IMAGE_ACCEPT = ".jpg,.jpeg,.png,.webp,.gif";
 export const VIDEO_ACCEPT = ".mp4,.webm,.mov,.ogv,.mkv";
 
@@ -35,20 +44,39 @@ export function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * MB)).toFixed(2)} GB`;
 }
 
-/** Individual drop: COe22 */
+/** Normalize individual drop/file code. New: STa23. Legacy: COe22. */
 export function normalizeCode(raw: string): string {
   const cleaned = raw.trim().replace(/\s+/g, "");
-  const match = cleaned.match(/^co([a-zA-Z])(\d{2})$/i);
-  if (!match) return "";
-  return `CO${match[1]!.toLowerCase()}${match[2]}`;
+  // New format
+  const st = cleaned.match(/^st([a-zA-Z])(\d{2})$/i);
+  if (st) return `ST${st[1]!.toLowerCase()}${st[2]}`;
+  // Legacy CODrop
+  const co = cleaned.match(/^co([a-zA-Z])(\d{2})$/i);
+  if (co) return `CO${co[1]!.toLowerCase()}${co[2]}`;
+  return "";
 }
 
-/** Batch main: CODr21 */
-export function normalizeAnyCode(raw: string): { kind: "drop" | "batch"; code: string } | null {
+/** Parse any share code: file (ST/CO) or folder (SHR/COD). */
+export function normalizeAnyCode(
+  raw: string,
+): { kind: "drop" | "batch"; code: string } | null {
   const cleaned = raw.trim().replace(/\s+/g, "");
-  const batch = cleaned.match(/^cod([a-zA-Z])(\d{2})$/i);
-  if (batch) return { kind: "batch", code: `COD${batch[1]!.toLowerCase()}${batch[2]}` };
-  const drop = cleaned.match(/^co([a-zA-Z])(\d{2})$/i);
-  if (drop) return { kind: "drop", code: `CO${drop[1]!.toLowerCase()}${drop[2]}` };
+
+  // Folder / batch — new
+  const shr = cleaned.match(/^shr([a-zA-Z])(\d{2})$/i);
+  if (shr) return { kind: "batch", code: `SHR${shr[1]!.toLowerCase()}${shr[2]}` };
+
+  // Folder / batch — legacy
+  const cod = cleaned.match(/^cod([a-zA-Z])(\d{2})$/i);
+  if (cod) return { kind: "batch", code: `COD${cod[1]!.toLowerCase()}${cod[2]}` };
+
+  // File — new
+  const st = cleaned.match(/^st([a-zA-Z])(\d{2})$/i);
+  if (st) return { kind: "drop", code: `ST${st[1]!.toLowerCase()}${st[2]}` };
+
+  // File — legacy
+  const co = cleaned.match(/^co([a-zA-Z])(\d{2})$/i);
+  if (co) return { kind: "drop", code: `CO${co[1]!.toLowerCase()}${co[2]}` };
+
   return null;
 }

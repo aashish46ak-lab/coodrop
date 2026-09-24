@@ -7,13 +7,14 @@ export type RecentDrop = {
   batchCode?: string | null;
 };
 
-const KEY = "codrop_recent_drops";
+const KEY = "sharetemp_recent_drops";
+const LEGACY_KEY = "codrop_recent_drops";
 const MAX = 40;
 
 function read(): RecentDrop[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(KEY) ?? localStorage.getItem(LEGACY_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as RecentDrop[];
     if (!Array.isArray(parsed)) return [];

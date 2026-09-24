@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const KEY = "codrop_last_cleanup";
+const KEY = "sharetemp_last_cleanup";
 const DAY = 24 * 60 * 60 * 1000;
 
 /** Call cleanup_expired_drops at most once per day per browser. */

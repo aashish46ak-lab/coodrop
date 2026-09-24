@@ -1,6 +1,7 @@
 /** Cross-device history key stored locally; can be imported on another device. */
 
-const KEY = "codrop_owner_key";
+const KEY = "sharetemp_owner_key";
+const LEGACY_KEY = "codrop_owner_key";
 
 function randomKey(): string {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -12,9 +13,11 @@ function randomKey(): string {
 export function getOwnerKey(): string {
   if (typeof window === "undefined") return "";
   try {
-    let k = localStorage.getItem(KEY);
+    let k = localStorage.getItem(KEY) ?? localStorage.getItem(LEGACY_KEY);
     if (!k || k.length < 16) {
       k = randomKey();
+      localStorage.setItem(KEY, k);
+    } else if (!localStorage.getItem(KEY)) {
       localStorage.setItem(KEY, k);
     }
     return k;
