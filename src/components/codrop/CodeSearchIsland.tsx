@@ -35,7 +35,7 @@ export function CodeSearchIsland({
 
   if (compact) {
     return (
-      <div className={cn("w-full max-w-[220px] sm:max-w-[260px]", className)}>
+      <div className={cn("w-full max-w-[240px] sm:max-w-[280px]", className)}>
         <form
           onSubmit={onSubmit}
           className="flex items-center gap-1.5 rounded-full border border-white/10 bg-[#0B0D10] py-1.5 pl-3 pr-1.5 shadow-md"
@@ -51,11 +51,11 @@ export function CodeSearchIsland({
               setValue(event.target.value);
               if (error) setError(null);
             }}
-            placeholder="Code..."
+            placeholder="Search code…"
             autoComplete="off"
             spellCheck={false}
             maxLength={12}
-            className="min-w-0 flex-1 bg-transparent py-1 font-mono text-sm text-white placeholder:font-sans placeholder:text-white/40 focus:outline-none"
+            className="min-w-0 flex-1 bg-transparent py-1 font-mono text-sm text-white placeholder:font-sans placeholder:text-white/45 focus:outline-none"
           />
           <button
             type="submit"
@@ -81,14 +81,14 @@ export function CodeSearchIsland({
 
   return (
     <section aria-labelledby="access-drop" className={cn("w-full", className)}>
-      <p id="access-drop" className="mb-3 text-center text-sm font-medium text-muted-foreground">
+      <p id="access-drop" className="mb-2.5 text-center text-sm font-medium text-muted-foreground sm:mb-3">
         Already have a code?
       </p>
       <form
         onSubmit={onSubmit}
-        className="mx-auto flex w-full max-w-2xl items-center gap-2 rounded-full border border-white/10 bg-[#0B0D10] p-2 pl-5 shadow-[0_24px_60px_-28px_rgba(11,13,16,0.65)] sm:gap-3"
+        className="mx-auto flex w-full max-w-2xl items-center gap-2 rounded-full border border-white/10 bg-[#0B0D10] p-1.5 pl-4 shadow-[0_24px_60px_-28px_rgba(11,13,16,0.65)] sm:gap-3 sm:p-2 sm:pl-5"
       >
-        <Search className="h-4.5 w-4.5 shrink-0 text-white/45" aria-hidden="true" />
+        <Search className="h-4 w-4 shrink-0 text-white/45 sm:h-4.5 sm:w-4.5" aria-hidden="true" />
         <input
           id="drop-code"
           value={value}
@@ -96,17 +96,19 @@ export function CodeSearchIsland({
             setValue(event.target.value);
             if (error) setError(null);
           }}
-          placeholder="Search share code..."
+          placeholder="Search share code (e.g. COf26)"
           autoComplete="off"
           spellCheck={false}
           maxLength={12}
-          className="min-w-0 flex-1 bg-transparent py-2 font-mono text-base text-white placeholder:font-sans placeholder:text-white/40 focus:outline-none"
+          inputMode="text"
+          enterKeyHint="go"
+          className="min-w-0 flex-1 bg-transparent py-2.5 font-mono text-base text-white placeholder:font-sans placeholder:text-white/45 focus:outline-none sm:py-2"
         />
         <button
           type="submit"
           disabled={busy}
           aria-label="Open shared drop"
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[#0B0D10] transition-transform hover:scale-[1.04] disabled:opacity-60"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[#0B0D10] transition-transform active:scale-95 hover:scale-[1.04] disabled:opacity-60 sm:h-11 sm:w-11"
         >
           {busy ? (
             <Loader2 className="h-4.5 w-4.5 animate-spin" aria-hidden="true" />
@@ -115,7 +117,7 @@ export function CodeSearchIsland({
           )}
         </button>
       </form>
-      <p className="mt-3 min-h-5 text-center text-xs text-destructive" role="status">
+      <p className="mt-2 min-h-5 text-center text-xs text-destructive sm:mt-3" role="status">
         {error ?? ""}
       </p>
     </section>

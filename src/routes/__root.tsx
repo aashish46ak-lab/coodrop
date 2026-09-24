@@ -16,6 +16,8 @@ import { OfflineBanner } from "@/components/codrop/OfflineBanner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
+const SITE_URL = "https://codrop.vercel.app";
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -80,35 +82,50 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CODrop - Share Anything. Get a Code." },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover",
+      },
+      {
+        title:
+          "CODrop — Free Temporary File Share | Share Text, Images & Videos with a Code",
+      },
       {
         name: "description",
         content:
-          "Temporarily share text, images and videos with a simple code. Optional password. Free and anonymous.",
+          "Temporarily share text, images and videos with a simple code. Free temporary file share, online file share and codedrop-style sharing. Anonymous, no signup.",
+      },
+      {
+        name: "keywords",
+        content:
+          "codedrop, CODrop, file share, temporary file share, temporary share, online file share, anonymous file share, share with code",
       },
       { name: "author", content: "CODrop" },
-      { property: "og:title", content: "CODrop - Share Anything. Get a Code." },
+      { name: "theme-color", content: "#0B0D10" },
+      { property: "og:title", content: "CODrop — Share Anything. Get a Code." },
       {
         property: "og:description",
-        content: "Temporarily share text, images and videos with a simple code.",
+        content:
+          "Free temporary file share. Drop text, photos or videos and get a short code. Anonymous, no signup.",
       },
       { property: "og:site_name", content: "CODrop" },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "/og.png" },
+      { property: "og:url", content: SITE_URL },
+      { property: "og:image", content: `${SITE_URL}/og.png` },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "CODrop - Share Anything. Get a Code." },
+      { name: "twitter:title", content: "CODrop — Share Anything. Get a Code." },
       {
         name: "twitter:description",
-        content: "Share text, photos and videos with a temporary code.",
+        content: "Temporary file share with a simple code. Free & anonymous.",
       },
-      { name: "twitter:image", content: "/og.png" },
+      { name: "twitter:image", content: `${SITE_URL}/og.png` },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/pwa-192.png" },
+      { rel: "canonical", href: SITE_URL },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
@@ -129,7 +146,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="antialiased">
         {children}
         <Scripts />
       </body>
