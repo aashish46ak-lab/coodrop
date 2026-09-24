@@ -1,17 +1,49 @@
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
-/** ShareTemp molecular mark — exact brand PNG */
+/** Exact ShareTemp molecular mark — pure SVG, transparent, no background box */
 export function DropMark({ className }: { className?: string }) {
   return (
-    <img
-      src="/mark.png"
-      alt=""
+    <svg
+      viewBox="0 0 64 64"
       width={36}
       height={36}
-      className={cn("h-9 w-9 object-contain", className)}
-      draggable={false}
-    />
+      className={cn("h-9 w-9 shrink-0", className)}
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id="st-mark-g" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#67e8f9" />
+          <stop offset="0.4" stopColor="#3b82f6" />
+          <stop offset="1" stopColor="#1d4ed8" />
+        </linearGradient>
+      </defs>
+      {/* molecular network mark matching brand logo */}
+      <circle cx="38" cy="22" r="10" fill="none" stroke="url(#st-mark-g)" strokeWidth="5.5" />
+      <circle cx="38" cy="22" r="6" fill="url(#st-mark-g)" />
+      <path
+        d="M30 28 Q18 40 16 52"
+        fill="none"
+        stroke="url(#st-mark-g)"
+        strokeWidth="5.5"
+        strokeLinecap="round"
+      />
+      <circle cx="16" cy="54" r="7" fill="none" stroke="url(#st-mark-g)" strokeWidth="5" />
+      <path
+        d="M46 20 L58 20"
+        fill="none"
+        stroke="url(#st-mark-g)"
+        strokeWidth="5.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M32 16 L24 8"
+        fill="none"
+        stroke="url(#st-mark-g)"
+        strokeWidth="4.5"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 
@@ -28,7 +60,7 @@ export function CodropWordmark({
   const mark = size === "lg" ? "h-10 w-10" : size === "sm" ? "h-7 w-7" : "h-8 w-8";
 
   return (
-    <span className={cn("inline-flex items-center gap-2", className)}>
+    <span className={cn("inline-flex items-center gap-2.5", className)}>
       <DropMark className={mark} />
       <span className={cn("font-bold tracking-tight text-[#1e40af]", text)}>ShareTemp</span>
     </span>
