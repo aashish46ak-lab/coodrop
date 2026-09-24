@@ -1,11 +1,12 @@
 {
-  "name": "tanstack_start_ts",
+  "name": "codrop",
   "private": true,
   "sideEffects": false,
   "type": "module",
   "scripts": {
+    "assets": "node scripts/write_pwa192.mjs && node scripts/write_pwa512.mjs && node scripts/write_og.mjs",
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "node scripts/write_pwa192.mjs && node scripts/write_pwa512.mjs && node scripts/write_og.mjs && vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
