@@ -1,12 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
-/** ShareTemp molecular network mark — exact brand PNG */
+/** ShareTemp molecular mark — exact brand PNG */
 export function DropMark({ className }: { className?: string }) {
   return (
     <img
       src="/mark.png"
-      alt="ShareTemp"
+      alt=""
       width={36}
       height={36}
       className={cn("h-9 w-9 object-contain", className)}
@@ -15,7 +15,7 @@ export function DropMark({ className }: { className?: string }) {
   );
 }
 
-/** Full wordmark: exact ShareTemp logo (transparent) */
+/** Full wordmark: mark + ShareTemp */
 export function CodropWordmark({
   className,
   size = "md",
@@ -23,22 +23,18 @@ export function CodropWordmark({
   className?: string;
   size?: "sm" | "md" | "lg";
 }) {
-  const h =
-    size === "lg" ? "h-12 sm:h-14" : size === "sm" ? "h-8" : "h-10";
+  const text =
+    size === "lg" ? "text-2xl sm:text-3xl" : size === "sm" ? "text-lg" : "text-xl";
+  const mark = size === "lg" ? "h-10 w-10" : size === "sm" ? "h-7 w-7" : "h-8 w-8";
 
   return (
-    <span className={cn("inline-flex items-center", className)}>
-      <img
-        src="/logo-transparent.png"
-        alt="ShareTemp"
-        className={cn(h, "w-auto object-contain")}
-        draggable={false}
-      />
+    <span className={cn("inline-flex items-center gap-2", className)}>
+      <DropMark className={mark} />
+      <span className={cn("font-bold tracking-tight text-[#1e40af]", text)}>ShareTemp</span>
     </span>
   );
 }
 
-/** Preferred alias */
 export const ShareTempWordmark = CodropWordmark;
 
 export function BrandHeader({
