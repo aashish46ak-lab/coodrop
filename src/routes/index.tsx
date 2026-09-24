@@ -6,6 +6,7 @@ import { CodeSearchIsland } from "@/components/codrop/CodeSearchIsland";
 import { RecentShared } from "@/components/codrop/RecentShared";
 import { HowItWorks } from "@/components/codrop/HowItWorks";
 import { Footer } from "@/components/codrop/Footer";
+import { PwaInstallPrompt } from "@/components/codrop/PwaInstallPrompt";
 import { useShareFlow } from "@/components/codrop/ShareFlow";
 
 export const Route = createFileRoute("/")({
@@ -23,6 +24,9 @@ export const Route = createFileRoute("/")({
           "temporary file share, share code, anonymous upload, pastebin, image share, video share, CODrop",
       },
       { name: "robots", content: "index, follow" },
+      { name: "theme-color", content: "#0B0D10" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "CODrop" },
       { property: "og:title", content: "CODrop - Share Anything. Get a Code." },
       {
         property: "og:description",
@@ -30,12 +34,20 @@ export const Route = createFileRoute("/")({
       },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "CODrop" },
-      { name: "twitter:card", content: "summary" },
+      { property: "og:image", content: "/og.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "CODrop - Share Anything. Get a Code." },
       {
         name: "twitter:description",
         content: "Share text, photos and videos with a temporary code.",
       },
+      { name: "twitter:image", content: "/og.png" },
+    ],
+    links: [
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/pwa-192.png" },
     ],
   }),
   component: Index,
@@ -83,6 +95,7 @@ function Index() {
       </main>
 
       {flow}
+      <PwaInstallPrompt />
     </div>
   );
 }

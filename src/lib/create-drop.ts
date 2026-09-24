@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CODROP } from "./codrop-config";
 import { hashPassword } from "./password";
 import { getOrCreateBatch } from "./batch";
+import { getOwnerKey } from "./owner-key";
 
 export type CreatedDrop = {
   code: string;
@@ -17,11 +18,9 @@ function friendly(message: string): string {
   if (lower.includes("empty_content")) return "Add some text before sharing.";
   if (lower.includes("content_too_large")) return "That text is too large to share.";
   if (lower.includes("missing_file")) return "Pick a file before sharing.";
-  if (lower.includes("missing_title") || lower.includes("empty_title"))
-    return "Title is required.";
+  if (lower.includes("missing_title")) return "Title is required.";
   if (lower.includes("invalid_type")) return "That kind of drop is not supported.";
-  if (lower.includes("no_code_available"))
-    return "All share codes are busy. Please try again.";
+  if (lower.includes("no_code_available")) return "All share codes are busy. Please try again.";
   if (lower.includes("function") || lower.includes("does not exist"))
     return "Database not set up. Run the latest CODrop SQL in Supabase.";
   if (lower.includes("jwt") || lower.includes("api key") || lower.includes("invalid api"))
@@ -50,37 +49,32 @@ async function insertDrop(args: {
 
   const batch = getOrCreateBatch();
   const ttl = args.ttlHours && [1, 6, 24].includes(args.ttlHours) ? args.ttlHours : 24;
+  const ownerKey = getOwnerKey();
 
   const params: Record<string, string | number | null | undefined> = {
     p_type: args.type,
     p_title: title,
     p_batch_code: batch.code,
     p_ttl_hours: ttl,
+    p_owner_key: ownerKey || null,
   };
   if (args.content != null) params.p_content = args.content;
   if (args.storagePath != null) params.p_storage_path = args.storagePath;
   if (args.originalFilename != null) params.p_original_filename = args.originalFilename;
   if (args.mimeType != null) params.p_mime_type = args.mimeType;
   if (args.fileSize != null) params.p_file_size = args.fileSize;
-
   if (args.password && args.password.trim()) {
     params.p_password_hash = await hashPassword(args.password);
   }
 
   const { data, error } = await supabase.rpc("create_drop", params);
-
   if (error) {
     console.error("[CODrop] create_drop error:", error);
     throw new Error(friendly(error.message ?? error.code ?? ""));
   }
   const row = (Array.isArray(data) ? data[0] : data) as DropRpcRow | undefined;
   if (!row?.code) throw new Error("We could not create your drop. Please try again.");
-  return {
-    code: row.code,
-    expiresAt: row.expires_at,
-    title,
-    batchCode: batch.code,
-  };
+  return { code: row.code, expiresAt: row.expires_at, title, batchCode: batch.code };
 }
 
 export async function createTextDrop(
@@ -91,9 +85,7 @@ export async function createTextDrop(
 ): Promise<CreatedDrop> {
   if (!title.trim()) throw new Error("Title is required.");
   if (!content.trim()) throw new Error("Add some text before sharing.");
-  if (content.length > CODROP.maxTextLength) {
-    throw new Error("That text is too long to share.");
-  }
+  if (content.length > CODROP.maxTextLength) throw new Error("That text is too long to share.");
   return insertDrop({ type: "text", content, title, password, ttlHours });
 }
 
@@ -102,12 +94,7 @@ function extensionOf(name: string): string {
   return parts.length > 1 ? `.${parts.pop()!.toLowerCase().slice(0, 8)}` : "";
 }
 
-/** Upload original file bytes - no client-side compression/resizing. */
-async function uploadFile(
-  path: string,
-  file: File,
-  onProgress: (percent: number) => void,
-): Promise<void> {
+async function uploadFile(path: string, file: File, onProgress: (percent: number) => void) {
   onProgress(5);
   const { error } = await supabase.storage.from("drops").upload(path, file, {
     cacheControl: "3600",
@@ -132,21 +119,12 @@ export async function createFileDrop(
   ttlHours?: number,
 ): Promise<CreatedDrop> {
   if (!title?.trim()) throw new Error("Title is required.");
-
   const allowed = kind === "image" ? CODROP.imageMimeTypes : CODROP.videoMimeTypes;
   const maxBytes = kind === "image" ? CODROP.maxImageBytes : CODROP.maxVideoBytes;
-
-  if (!allowed.includes(file.type as never)) {
-    throw new Error("That file type is not supported.");
-  }
-  if (file.size > maxBytes) {
-    throw new Error("That file is larger than the allowed limit.");
-  }
-
-  // Store original filename extension; upload raw File (full quality)
+  if (!allowed.includes(file.type as never)) throw new Error("That file type is not supported.");
+  if (file.size > maxBytes) throw new Error("That file is larger than the allowed limit.");
   const path = `${kind}/${crypto.randomUUID()}${extensionOf(file.name)}`;
   await uploadFile(path, file, onProgress);
-
   return insertDrop({
     type: kind,
     storagePath: path,
@@ -157,4 +135,22 @@ export async function createFileDrop(
     password,
     ttlHours,
   });
+}
+
+export async function deleteDropOnServer(code: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc("delete_drop", { p_code: code });
+  if (error) {
+    console.error("[CODrop] delete_drop:", error);
+    return false;
+  }
+  return !!data;
+}
+
+export async function deleteBatchOnServer(batchCode: string): Promise<number> {
+  const { data, error } = await supabase.rpc("delete_batch", { p_batch_code: batchCode });
+  if (error) {
+    console.error("[CODrop] delete_batch:", error);
+    return 0;
+  }
+  return typeof data === "number" ? data : 0;
 }
