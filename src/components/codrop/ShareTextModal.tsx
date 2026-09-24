@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { CODROP } from "@/lib/codrop-config";
 import { createTextDrop, type CreatedDrop } from "@/lib/create-drop";
+import { useOnline } from "@/hooks/use-online";
 
 export function ShareTextModal({
   open,
@@ -24,6 +25,7 @@ export function ShareTextModal({
   onOpenChange: (open: boolean) => void;
   onCreated: (drop: CreatedDrop) => void;
 }) {
+  const online = useOnline();
   const [title, setTitle] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -32,10 +34,15 @@ export function ShareTextModal({
   const [busy, setBusy] = useState(false);
 
   const tooLong = text.length > CODROP.maxTextLength;
-  const canShare = title.trim().length > 0 && text.trim().length > 0 && !tooLong;
+  const canShare =
+    online && title.trim().length > 0 && text.trim().length > 0 && !tooLong;
 
   async function share() {
     if (!canShare) return;
+    if (!online) {
+      toast.error("You are offline. Reconnect to share.");
+      return;
+    }
     setBusy(true);
     try {
       const drop = await createTextDrop(text, title, password || undefined, ttl);
@@ -44,7 +51,13 @@ export function ShareTextModal({
       setPassword("");
       onCreated(drop);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Something went wrong.");
+      const msg =
+        error instanceof Error
+          ? error.message
+          : !navigator.onLine
+            ? "You are offline. Reconnect and try again."
+            : "Something went wrong.";
+      toast.error(msg);
     } finally {
       setBusy(false);
     }
@@ -57,6 +70,12 @@ export function ShareTextModal({
           <DialogTitle>Share Text</DialogTitle>
           <DialogDescription>Paste notes, source code, logs, JSON or links.</DialogDescription>
         </DialogHeader>
+
+        {!online ? (
+          <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            You are offline. Reconnect to share text.
+          </p>
+        ) : null}
 
         <div className="space-y-3">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -138,11 +157,25 @@ export function ShareTextModal({
         </div>
 
         <DialogFooter className="gap-2 sm:justify-between">
-          <Button type="button" variant="ghost" disabled={busy} onClick={() => { setText(""); setTitle(""); setPassword(""); }}>
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={busy}
+            onClick={() => {
+              setText("");
+              setTitle("");
+              setPassword("");
+            }}
+          >
             Clear
           </Button>
           <div className="flex gap-2">
-            <Button type="button" variant="outline" disabled={busy} onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy}
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="button" disabled={busy || !canShare} onClick={() => void share()}>

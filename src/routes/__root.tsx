@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
 import { PwaInstallPrompt } from "@/components/codrop/PwaInstallPrompt";
+import { OfflineBanner } from "@/components/codrop/OfflineBanner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -141,8 +142,8 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <OfflineBanner />
       <Outlet />
-      {/* Global so Install shows on every page */}
       <PwaInstallPrompt />
       <Toaster position="top-center" />
     </QueryClientProvider>
