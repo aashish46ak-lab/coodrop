@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AlertCircle, Eye, EyeOff, Loader2 } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { CODROP, IMAGE_ACCEPT, VIDEO_ACCEPT, formatBytes } from "@/lib/codrop-config";
 import { createFileDrop, type CreatedDrop } from "@/lib/create-drop";
+import { scanUploadFile } from "@/lib/file-scan";
+import { useOnline } from "@/hooks/use-online";
 import { UploadDropzone } from "./UploadDropzone";
 
 export function ShareFileModal({
@@ -28,6 +30,7 @@ export function ShareFileModal({
   onOpenChange: (open: boolean) => void;
   onCreated: (drop: CreatedDrop) => void;
 }) {
+  const online = useOnline();
   const [title, setTitle] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -36,6 +39,7 @@ export function ShareFileModal({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isImage = kind === "image";
@@ -61,32 +65,56 @@ export function ShareFileModal({
       setProgress(0);
       setError(null);
       setBusy(false);
+      setScanning(false);
     }
   }, [open]);
 
-  function pick(next: File) {
+  async function pick(next: File) {
     setError(null);
     setProgress(0);
+    setFile(null);
+
     if (!allowed.includes(next.type as never)) {
       setError(isImage ? "Unsupported image format." : "Unsupported video format.");
-      setFile(null);
       return;
     }
     if (next.size > maxBytes) {
       setError(`File is ${formatBytes(next.size)}. Limit ${formatBytes(maxBytes)}.`);
-      setFile(null);
       return;
     }
-    setFile(next);
-    if (!title.trim()) setTitle(next.name.replace(/\.[^.]+$/, "").slice(0, 120));
+
+    setScanning(true);
+    try {
+      const scan = await scanUploadFile(next, kind);
+      if (!scan.ok) {
+        setError(scan.reason);
+        toast.error(scan.reason);
+        return;
+      }
+      setFile(next);
+      if (!title.trim()) setTitle(next.name.replace(/\.[^.]+$/, "").slice(0, 120));
+    } finally {
+      setScanning(false);
+    }
   }
 
   async function share() {
     if (!file || !title.trim()) return;
+    if (!online) {
+      toast.error("You are offline. Reconnect to share.");
+      return;
+    }
     setBusy(true);
     setError(null);
     setProgress(0);
     try {
+      // Re-scan right before upload
+      const scan = await scanUploadFile(file, kind);
+      if (!scan.ok) {
+        setError(scan.reason);
+        toast.error(scan.reason);
+        return;
+      }
       const drop = await createFileDrop(
         kind,
         file,
@@ -98,7 +126,12 @@ export function ShareFileModal({
       );
       onCreated(drop);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Upload failed.";
+      const message =
+        err instanceof Error
+          ? err.message
+          : !navigator.onLine
+            ? "You are offline. Reconnect and try again."
+            : "Upload failed.";
       setError(message);
       toast.error(message);
     } finally {
@@ -106,7 +139,7 @@ export function ShareFileModal({
     }
   }
 
-  const canShare = !!file && title.trim().length > 0;
+  const canShare = !!file && title.trim().length > 0 && online && !scanning;
 
   return (
     <Dialog open={open} onOpenChange={(next) => (busy ? null : onOpenChange(next))}>
@@ -119,6 +152,12 @@ export function ShareFileModal({
               : `MP4, WEBM, MOV up to ${formatBytes(maxBytes)}`}
           </DialogDescription>
         </DialogHeader>
+
+        {!online ? (
+          <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            You are offline. Reconnect to upload.
+          </p>
+        ) : null}
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
@@ -183,14 +222,18 @@ export function ShareFileModal({
           accept={accept}
           hint={isImage ? `Images up to ${formatBytes(maxBytes)}` : `Videos up to ${formatBytes(maxBytes)}`}
           file={file}
-          disabled={busy}
-          onFile={pick}
+          disabled={busy || scanning || !online}
+          onFile={(f) => void pick(f)}
           onClear={() => {
             setFile(null);
             setProgress(0);
           }}
         >
-          {previewUrl && isImage ? (
+          {scanning ? (
+            <p className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
+              <ShieldCheck className="h-4 w-4" /> Scanning file...
+            </p>
+          ) : previewUrl && isImage ? (
             <img src={previewUrl} alt="Preview" className="max-h-64 w-full object-contain" />
           ) : previewUrl ? (
             <video src={previewUrl} controls className="max-h-64 w-full bg-black" />

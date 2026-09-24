@@ -1,6 +1,7 @@
 import { FileCode2, ImageIcon, PlayCircle, type LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useOnline } from "@/hooks/use-online";
 
 export type ShareKind = "text" | "image" | "video";
 
@@ -40,6 +41,7 @@ export function ShareOptionCard({
   icon: Icon,
   iconClass,
   compact,
+  disabled,
   onClick,
 }: {
   title: string;
@@ -47,17 +49,20 @@ export function ShareOptionCard({
   icon: LucideIcon;
   iconClass: string;
   compact?: boolean;
+  disabled?: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       className={cn(
         "group flex w-full flex-col items-start gap-3 rounded-2xl border border-border/80 bg-card text-left shadow-[0_1px_2px_rgba(11,13,16,0.04),0_12px_32px_-24px_rgba(11,13,16,0.25)]",
         "transition-all duration-200 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-[0_2px_4px_rgba(11,13,16,0.04),0_24px_48px_-28px_rgba(79,70,229,0.35)]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         "motion-reduce:transition-none motion-reduce:hover:translate-y-0",
+        "disabled:pointer-events-none disabled:opacity-50 disabled:hover:translate-y-0",
         compact ? "p-4" : "p-5 sm:p-6",
       )}
     >
@@ -102,19 +107,29 @@ export function ShareOptions({
   compact?: boolean;
   className?: string;
 }) {
+  const online = useOnline();
+
   return (
-    <div className={cn("grid gap-4 sm:grid-cols-3", className)}>
-      {OPTIONS.map((option) => (
-        <ShareOptionCard
-          key={option.kind}
-          title={option.title}
-          description={option.description}
-          icon={option.icon}
-          iconClass={option.iconClass}
-          compact={!!compact}
-          onClick={() => onSelect(option.kind)}
-        />
-      ))}
+    <div className={cn("space-y-2", className)}>
+      {!online ? (
+        <p className="text-center text-xs text-amber-700 dark:text-amber-400">
+          Offline — reconnect to share.
+        </p>
+      ) : null}
+      <div className="grid gap-4 sm:grid-cols-3">
+        {OPTIONS.map((option) => (
+          <ShareOptionCard
+            key={option.kind}
+            title={option.title}
+            description={option.description}
+            icon={option.icon}
+            iconClass={option.iconClass}
+            compact={!!compact}
+            disabled={!online}
+            onClick={() => onSelect(option.kind)}
+          />
+        ))}
+      </div>
     </div>
   );
 }
