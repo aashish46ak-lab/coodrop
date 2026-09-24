@@ -1,23 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#000000"/>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f8fafc"/>
-      <stop offset="1" stop-color="#eef2ff"/>
-    </linearGradient>
-    <linearGradient id="drop" x1="0" y1="0" x2="0" y2="1">
+    <linearGradient id="g" x1="400" y1="150" x2="800" y2="480" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#67e8f9"/>
-      <stop offset="1" stop-color="#22d3ee"/>
+      <stop offset="0.45" stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#1d4ed8"/>
     </linearGradient>
   </defs>
-  <rect width="1200" height="630" fill="url(#bg)"/>
-  <circle cx="980" cy="80" r="180" fill="#6366f1" opacity="0.08"/>
-  <circle cx="160" cy="520" r="140" fill="#22d3ee" opacity="0.1"/>
-  <g transform="translate(420, 180)">
-    <text x="0" y="70" font-family="Inter,system-ui,sans-serif" font-size="72" font-weight="700" fill="#0B0D10">C</text>
-    <path d="M95 10C95 10 130 50 130 72c0 16-14 30-35 30s-35-14-35-30C60 50 95 10 95 10z" fill="url(#drop)" transform="translate(20,5)"/>
-    <text x="115" y="78" text-anchor="middle" font-family="ui-monospace,monospace" font-size="18" font-weight="700" fill="#0B0D10">&lt;/&gt;</text>
-    <text x="180" y="70" font-family="Inter,system-ui,sans-serif" font-size="72" font-weight="700" fill="#0B0D10">DROP</text>
+  <g transform="translate(420, 140) scale(2.2)">
+    <circle cx="36" cy="24" r="9" fill="none" stroke="url(#g)" stroke-width="5"/>
+    <circle cx="36" cy="24" r="5.5" fill="url(#g)"/>
+    <path d="M28 30 Q18 40 16 50" fill="none" stroke="url(#g)" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="16" cy="52" r="6" fill="none" stroke="url(#g)" stroke-width="4.5"/>
+    <path d="M44 22 L56 22" fill="none" stroke="url(#g)" stroke-width="5" stroke-linecap="round"/>
+    <path d="M30 18 L22 10" fill="none" stroke="url(#g)" stroke-width="4" stroke-linecap="round"/>
   </g>
-  <text x="600" y="340" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="36" font-weight="600" fill="#0B0D10">Share anything. Get a code.</text>
-  <text x="600" y="390" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="22" fill="#64748b">Temporary text, image and video sharing</text>
+  <text x="600" y="520" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="42" font-weight="700" fill="#ffffff">ShareTemp</text>
+  <text x="600" y="565" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="22" fill="#94a3b8">Share temporarily. Keep it simple.</text>
 </svg>
