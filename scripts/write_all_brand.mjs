@@ -7,8 +7,6 @@ for (const s of [
   "write_og.mjs",
   "write_pwa192.mjs",
   "write_pwa512.mjs",
-  "write_logo.mjs",
-  "write_logo_transparent.mjs",
   "write_mark.mjs",
   "write_favicon32.mjs",
   "write_apple.mjs",
