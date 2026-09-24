@@ -1,6 +1,5 @@
--- Server delete, storage path cleanup helper, owner history
+-- Server delete, cleanup, owner history
 
--- Delete a single drop by code (knowing the code = permission)
 CREATE OR REPLACE FUNCTION public.delete_drop(p_code text)
 RETURNS boolean
 LANGUAGE plpgsql
@@ -9,29 +8,26 @@ SET search_path = public
 AS $$
 DECLARE
   v_path text;
+  v_code text;
 BEGIN
   IF p_code IS NULL OR length(btrim(p_code)) < 4 THEN
     RETURN false;
   END IF;
 
-  SELECT storage_path INTO v_path
+  SELECT code, storage_path INTO v_code, v_path
   FROM public.shared_drops
-  WHERE code = p_code OR lower(code) = lower(p_code);
+  WHERE code = p_code OR lower(code) = lower(btrim(p_code))
+  LIMIT 1;
 
-  DELETE FROM public.shared_drops
-  WHERE code = p_code OR lower(code) = lower(p_code);
-
-  IF NOT FOUND THEN
+  IF v_code IS NULL THEN
     RETURN false;
   END IF;
 
-  -- Best-effort storage remove (may fail if no permission; ok)
+  DELETE FROM public.shared_drops WHERE code = v_code;
+
   IF v_path IS NOT NULL THEN
-    BEGIN
-      PERFORM storage.delete_object('drops', v_path);
-    EXCEPTION WHEN OTHERS THEN
-      NULL; -- ignore storage errors
-    END;
+    DELETE FROM storage.objects
+    WHERE bucket_id = 'drops' AND name = v_path;
   END IF;
 
   RETURN true;
@@ -40,7 +36,6 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.delete_drop(text) TO anon, authenticated, service_role;
 
--- Delete all drops in a batch
 CREATE OR REPLACE FUNCTION public.delete_batch(p_batch_code text)
 RETURNS int
 LANGUAGE plpgsql
@@ -68,7 +63,6 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.delete_batch(text) TO anon, authenticated, service_role;
 
--- Cleanup expired DB rows (call via cron or manually)
 CREATE OR REPLACE FUNCTION public.cleanup_expired_drops()
 RETURNS int
 LANGUAGE plpgsql
@@ -83,11 +77,8 @@ BEGIN
     SELECT code, storage_path FROM public.shared_drops WHERE expires_at <= now()
   LOOP
     IF r.storage_path IS NOT NULL THEN
-      BEGIN
-        PERFORM storage.delete_object('drops', r.storage_path);
-      EXCEPTION WHEN OTHERS THEN
-        NULL;
-      END;
+      DELETE FROM storage.objects
+      WHERE bucket_id = 'drops' AND name = r.storage_path;
     END IF;
     DELETE FROM public.shared_drops WHERE code = r.code;
     n := n + 1;
@@ -98,7 +89,6 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.cleanup_expired_drops() TO anon, authenticated, service_role;
 
--- List drops for an owner_key (cross-device history)
 CREATE OR REPLACE FUNCTION public.list_owner_drops(p_owner_key text)
 RETURNS TABLE (
   code text,
@@ -138,8 +128,8 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.list_owner_drops(text) TO anon, authenticated, service_role;
 
--- Extend create_drop with owner_key (replace function)
 DROP FUNCTION IF EXISTS public.create_drop(text, text, text, text, text, bigint, text, text, text, int);
+DROP FUNCTION IF EXISTS public.create_drop(text, text, text, text, text, bigint, text, text, text, int, text);
 
 CREATE OR REPLACE FUNCTION public.create_drop(
   p_type text,

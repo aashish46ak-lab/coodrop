@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ChevronDown,
   ChevronRight,
@@ -9,17 +9,23 @@ import {
   Trash2,
   Video,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   buildSharedList,
   removeRecentBatch,
   removeRecentDrop,
+  saveRecentDrop,
   type RecentDrop,
   type SharedListEntry,
 } from "@/lib/recent-drops";
 import { getDrop, type DropResult } from "@/lib/drops.functions";
+import { deleteBatchOnServer, deleteDropOnServer } from "@/lib/create-drop";
+import { getOwnerKey } from "@/lib/owner-key";
+import { supabase } from "@/integrations/supabase/client";
 import { SharedPreviewDialog } from "./SharedPreviewDialog";
 import { ExpirationTimer } from "./ExpirationTimer";
+import { HistorySync } from "./HistorySync";
 import { cn } from "@/lib/utils";
 
 const typeIcon = {
@@ -32,17 +38,49 @@ export function RecentShared({ className }: { className?: string }) {
   const [entries, setEntries] = useState<SharedListEntry[]>([]);
   const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({});
   const [loadingCode, setLoadingCode] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [preview, setPreview] = useState<Extract<DropResult, { state: "ok" }> | null>(null);
 
-  function refresh() {
+  const refresh = useCallback(() => {
     setEntries(buildSharedList());
-  }
+  }, []);
+
+  const syncFromServer = useCallback(async () => {
+    const ownerKey = getOwnerKey();
+    if (!ownerKey) return;
+    try {
+      const { data, error } = await supabase.rpc("list_owner_drops", {
+        p_owner_key: ownerKey,
+      });
+      if (error || !data) return;
+      for (const row of data as Array<{
+        code: string;
+        type: string;
+        title: string;
+        expires_at: string;
+        created_at: string;
+        batch_code: string | null;
+      }>) {
+        saveRecentDrop({
+          code: row.code,
+          title: row.title,
+          type: row.type as "text" | "image" | "video",
+          expiresAt: row.expires_at,
+          batchCode: row.batch_code,
+        });
+      }
+      setEntries(buildSharedList());
+    } catch {
+      // offline / RPC missing
+    }
+  }, []);
 
   useEffect(() => {
     refresh();
+    void syncFromServer();
     const id = window.setInterval(refresh, 30_000);
     return () => window.clearInterval(id);
-  }, []);
+  }, [refresh, syncFromServer]);
 
   async function openItem(item: RecentDrop) {
     setLoadingCode(item.code);
@@ -57,19 +95,33 @@ export function RecentShared({ className }: { className?: string }) {
     }
   }
 
-  function deleteFile(code: string, e: React.MouseEvent) {
+  async function deleteFile(code: string, e: React.MouseEvent) {
     e.stopPropagation();
+    setDeleting(code);
+    const ok = await deleteDropOnServer(code);
     removeRecentDrop(code);
     refresh();
+    setDeleting(null);
+    toast.success(ok ? "Drop deleted" : "Removed from list");
   }
 
-  function deleteFolder(batchCode: string, e: React.MouseEvent) {
+  async function deleteFolder(batchCode: string, e: React.MouseEvent) {
     e.stopPropagation();
+    setDeleting(batchCode);
+    const n = await deleteBatchOnServer(batchCode);
     removeRecentBatch(batchCode);
     refresh();
+    setDeleting(null);
+    toast.success(n > 0 ? `Deleted ${n} drops` : "Folder removed from list");
   }
 
-  if (entries.length === 0) return null;
+  if (entries.length === 0) {
+    return (
+      <section className={cn("w-full", className)}>
+        <HistorySync onImported={() => void syncFromServer()} />
+      </section>
+    );
+  }
 
   return (
     <section className={cn("w-full", className)} aria-labelledby="recent-shared">
@@ -114,11 +166,16 @@ export function RecentShared({ className }: { className?: string }) {
                   </button>
                   <button
                     type="button"
-                    className="rounded-lg p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                    aria-label="Remove folder from list"
-                    onClick={(e) => deleteFolder(entry.batchCode, e)}
+                    className="rounded-lg p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+                    aria-label="Delete folder"
+                    disabled={deleting === entry.batchCode}
+                    onClick={(e) => void deleteFolder(entry.batchCode, e)}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    {deleting === entry.batchCode ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-3.5 w-3.5" />
+                    )}
                   </button>
                 </div>
 
@@ -129,7 +186,7 @@ export function RecentShared({ className }: { className?: string }) {
                       const busy = loadingCode === item.code;
                       return (
                         <li key={item.code}>
-                          <div className="flex items-center gap-2 pl-10 pr-3 py-2">
+                          <div className="flex items-center gap-2 py-2 pl-10 pr-3">
                             <button
                               type="button"
                               className="flex min-w-0 flex-1 items-center gap-2 text-left"
@@ -153,8 +210,9 @@ export function RecentShared({ className }: { className?: string }) {
                             <button
                               type="button"
                               className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                              aria-label="Remove file"
-                              onClick={(e) => deleteFile(item.code, e)}
+                              aria-label="Delete file"
+                              disabled={deleting === item.code}
+                              onClick={(e) => void deleteFile(item.code, e)}
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>
@@ -168,7 +226,6 @@ export function RecentShared({ className }: { className?: string }) {
             );
           }
 
-          // Single file
           const item = entry.item;
           const Icon = typeIcon[item.type];
           const busy = loadingCode === item.code;
@@ -185,11 +242,7 @@ export function RecentShared({ className }: { className?: string }) {
                     {index + 1}
                   </span>
                   <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
-                    {busy ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Icon className="h-4 w-4" />
-                    )}
+                    {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium text-foreground">
@@ -202,8 +255,9 @@ export function RecentShared({ className }: { className?: string }) {
                 <button
                   type="button"
                   className="rounded-lg p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                  aria-label="Remove from list"
-                  onClick={(e) => deleteFile(item.code, e)}
+                  aria-label="Delete"
+                  disabled={deleting === item.code}
+                  onClick={(e) => void deleteFile(item.code, e)}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
@@ -212,6 +266,8 @@ export function RecentShared({ className }: { className?: string }) {
           );
         })}
       </ul>
+
+      <HistorySync onImported={() => void syncFromServer()} />
 
       <SharedPreviewDialog
         drop={preview}
