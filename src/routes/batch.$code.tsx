@@ -18,7 +18,7 @@ export const Route = createFileRoute("/batch/$code")({
   },
   head: ({ params }) => ({
     meta: [
-      { title: `Batch ${params.code} - CODrop` },
+      { title: `Folder ${params.code} — ShareTemp` },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -49,19 +49,22 @@ function BatchPage() {
 
         <div className="mt-8 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            Shared batch
+            Shared folder
           </p>
           <p className="mt-2 font-mono text-2xl font-semibold tracking-wide text-foreground">
             {code}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            All drops shared under this main code
+            All items shared under this folder code
           </p>
         </div>
 
         {data.state === "not_found" || data.items.length === 0 ? (
           <div className="mt-10 rounded-2xl border border-border bg-card p-10 text-center">
-            <p className="text-sm text-muted-foreground">No active drops in this batch.</p>
+            <p className="text-sm text-muted-foreground">No active shares in this folder.</p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Folder codes look like SHRa23. File codes look like STa23.
+            </p>
             <Button asChild className="mt-4" variant="outline">
               <Link to="/">Back to home</Link>
             </Button>

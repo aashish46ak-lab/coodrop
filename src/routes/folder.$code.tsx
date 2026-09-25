@@ -24,7 +24,7 @@ import { getSessionFolder, type SessionFolderItem } from "@/lib/session-folder";
 export const Route = createFileRoute("/folder/$code")({
   head: ({ params }) => ({
     meta: [
-      { title: `Folder ${params.code} - CODrop` },
+      { title: `Folder ${params.code} — ShareTemp` },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -45,7 +45,6 @@ function FolderPage() {
     if (session && session.batchCode.toLowerCase() === code.toLowerCase()) {
       setItems(session.items);
     }
-    // Also load from server for this batch
     void listBatch({ data: { code } }).then((res) => {
       if (res.items?.length) {
         setItems(
@@ -60,7 +59,6 @@ function FolderPage() {
     });
   }, [code]);
 
-  // Re-read session when returning from share modal
   useEffect(() => {
     const id = window.setInterval(() => {
       const session = getSessionFolder();
@@ -124,11 +122,10 @@ function FolderPage() {
             </Button>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
-            Share this code so others can open the whole folder. Expires in 24 hours.
+            Share this folder code (e.g. SHRa23) so others can open everything inside.
           </p>
         </div>
 
-        {/* File list */}
         <ul className="mt-10 space-y-2">
           {items.length === 0 ? (
             <li className="rounded-2xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
@@ -165,7 +162,6 @@ function FolderPage() {
           )}
         </ul>
 
-        {/* Share more into same folder */}
         <div className="mt-12 border-t border-border pt-8">
           <p className="mb-4 text-center text-sm font-medium text-muted-foreground">
             Add more to this folder

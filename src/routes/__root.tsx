@@ -12,12 +12,13 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { PwaInstallPrompt } from "@/components/codrop/PwaInstallPrompt";
 import { OfflineBanner } from "@/components/codrop/OfflineBanner";
+import { CookieConsent } from "@/components/codrop/CookieConsent";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 const SITE_URL = "https://sharetemp.vercel.app";
-const OG_IMAGE = `${SITE_URL}/og.jpg?v=4`;
+const OG_IMAGE = `${SITE_URL}/og.jpg?v=5`;
 
 function NotFoundComponent() {
   return (
@@ -93,12 +94,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "ShareTemp lets you temporarily share files, text, photos, videos and folders with simple shareable links.",
+          "ShareTemp lets you temporarily share files, text, photos, videos and folders with simple shareable codes. Free, anonymous, no signup.",
       },
       {
         name: "keywords",
         content:
-          "ShareTemp, temporary file share, temporary share, online file share, share text, share photos, share videos",
+          "ShareTemp, temporary file share, temporary share, online file share, share text, share photos, share videos, anonymous file share",
       },
       { name: "author", content: "ShareTemp" },
       { name: "theme-color", content: "#1e40af" },
@@ -106,7 +107,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         property: "og:description",
         content:
-          "ShareTemp lets you temporarily share files, text, photos, videos and folders with simple shareable links.",
+          "ShareTemp lets you temporarily share files, text, photos, videos and folders with simple shareable codes.",
       },
       { property: "og:site_name", content: "ShareTemp" },
       { property: "og:type", content: "website" },
@@ -121,7 +122,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:title", content: "ShareTemp — Temporary File & Content Sharing" },
       {
         name: "twitter:description",
-        content: "Temporarily share files, text, photos and videos with simple links.",
+        content: "Temporarily share files, text, photos and videos with simple codes.",
       },
       { name: "twitter:image", content: OG_IMAGE },
     ],
@@ -168,6 +169,7 @@ function RootComponent() {
       <OfflineBanner />
       <Outlet />
       <PwaInstallPrompt />
+      <CookieConsent />
       <Toaster position="top-center" />
     </QueryClientProvider>
   );

@@ -14,23 +14,25 @@ import { useShareFlow } from "@/components/codrop/ShareFlow";
 import { copyToClipboard } from "@/lib/clipboard";
 import { getDrop, type DropResult } from "@/lib/drops.functions";
 
+const SITE = "https://sharetemp.vercel.app";
+
 export const Route = createFileRoute("/drop/$code")({
   loader: async ({ params }): Promise<DropResult> => {
     try {
       return await getDrop({ data: { code: params.code } });
     } catch (e) {
-      console.error("[CODrop] loader error:", e);
+      console.error("[ShareTemp] loader error:", e);
       return { state: "not_found" };
     }
   },
   head: ({ params, loaderData }) => {
     const drop = loaderData as DropResult | undefined;
-    let titleLabel = `Shared Drop ${params.code}`;
+    let titleLabel = `Shared ${params.code}`;
     if (drop && (drop.state === "ok" || drop.state === "locked") && drop.title) {
       titleLabel = drop.title;
     }
-    const title = `${titleLabel} - CODrop`;
-    const description = "Open a CODrop share to view, copy or download shared content.";
+    const title = `${titleLabel} — ShareTemp`;
+    const description = "Open a ShareTemp share to view, copy or download shared content.";
     return {
       meta: [
         { title },
@@ -38,7 +40,7 @@ export const Route = createFileRoute("/drop/$code")({
         { name: "robots", content: "noindex" },
         { property: "og:title", content: title },
         { property: "og:description", content: description },
-        { property: "og:image", content: "/og.svg" },
+        { property: "og:image", content: `${SITE}/og.jpg?v=5` },
       ],
     };
   },
@@ -82,18 +84,18 @@ function EmptyState({ kind }: { kind: "not_found" | "expired" | "error" }) {
   const copy = {
     not_found: {
       icon: SearchX,
-      title: "We could not find that drop.",
-      text: "Double-check the code. Codes look like COf26.",
+      title: "We could not find that share.",
+      text: "Double-check the code. File codes look like STa23. Folder codes look like SHRa23.",
     },
     expired: {
       icon: Clock3,
-      title: "Drop expired",
-      text: "This CODrop is no longer accessible.",
+      title: "Share expired",
+      text: "This ShareTemp share is no longer accessible.",
     },
     error: {
       icon: SearchX,
       title: "Something went wrong.",
-      text: "We could not load this drop right now. Please try again.",
+      text: "We could not load this share right now. Please try again.",
     },
   }[kind];
 
@@ -161,7 +163,7 @@ function LockedPanel({
       <h1 className="mt-4 text-xl font-semibold tracking-tight text-foreground">
         {title || "Password protected"}
       </h1>
-      <p className="mt-2 text-sm text-muted-foreground">Enter the password to view this drop.</p>
+      <p className="mt-2 text-sm text-muted-foreground">Enter the password to view this share.</p>
       <ExpirationTimer expiresAt={expiresAt} className="mt-3" />
       <form
         className="mt-6 space-y-3 text-left"
@@ -210,7 +212,7 @@ function OkDropBody({
 
       <div className="mb-6 flex flex-col items-center gap-3 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          Shared drop
+          Shared
         </p>
         {drop.title ? (
           <h1 className="max-w-xl text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
