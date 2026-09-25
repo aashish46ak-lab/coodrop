@@ -11,7 +11,7 @@ export function Footer() {
           <p className="text-xs text-muted-foreground">Share temporarily. Keep it simple.</p>
         </div>
 
-        <nav aria-label="Footer" className="flex items-center gap-5 text-sm text-muted-foreground">
+        <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground sm:gap-5">
           <Link to="/" className="transition-colors hover:text-foreground">
             Home
           </Link>

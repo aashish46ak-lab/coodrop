@@ -1,46 +1,17 @@
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
-/**
- * ShareTemp molecular mark — transparent SVG (no black box).
- * Geometry matches the brand logo: upper node + ring, right arm,
- * curved stem, lower node.
- */
+/** Exact ShareTemp molecular mark from brand logo (transparent PNG) */
 export function DropMark({ className }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 100 100"
+    <img
+      src="/mark.png"
+      alt=""
       width={36}
       height={36}
-      className={cn("h-9 w-9 shrink-0", className)}
-      aria-hidden="true"
-      fill="none"
-    >
-      <defs>
-        <linearGradient id="st-mark-g" x1="10" y1="5" x2="90" y2="95" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#22d3ee" />
-          <stop offset="0.45" stopColor="#3b82f6" />
-          <stop offset="1" stopColor="#1e40af" />
-        </linearGradient>
-      </defs>
-      {/* upper ring */}
-      <circle cx="58" cy="32" r="18" stroke="url(#st-mark-g)" strokeWidth="9" />
-      {/* upper solid core */}
-      <circle cx="58" cy="32" r="10" fill="url(#st-mark-g)" />
-      {/* right arm */}
-      <path d="M76 32 H96" stroke="url(#st-mark-g)" strokeWidth="9" strokeLinecap="round" />
-      {/* upper-left arc tick */}
-      <path d="M48 18 L40 10" stroke="url(#st-mark-g)" strokeWidth="7" strokeLinecap="round" />
-      {/* curved stem down-left */}
-      <path
-        d="M46 44 C34 56 28 68 24 82"
-        stroke="url(#st-mark-g)"
-        strokeWidth="9"
-        strokeLinecap="round"
-      />
-      {/* lower ring */}
-      <circle cx="22" cy="86" r="12" stroke="url(#st-mark-g)" strokeWidth="8" />
-    </svg>
+      className={cn("h-9 w-9 shrink-0 object-contain", className)}
+      draggable={false}
+    />
   );
 }
 
