@@ -16,7 +16,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       {
-        title: "ShareTemp — Temporary File & Content Sharing",
+        title: "ShareTemp - Temporary File & Content Sharing",
       },
       {
         name: "description",
@@ -35,7 +35,7 @@ export const Route = createFileRoute("/")({
       { name: "apple-mobile-web-app-title", content: "ShareTemp" },
       { name: "application-name", content: "ShareTemp" },
       { name: "author", content: "ShareTemp" },
-      { property: "og:title", content: "ShareTemp — Temporary File & Content Sharing" },
+      { property: "og:title", content: "ShareTemp - Temporary File & Content Sharing" },
       {
         property: "og:description",
         content:
@@ -45,18 +45,18 @@ export const Route = createFileRoute("/")({
       { property: "og:site_name", content: "ShareTemp" },
       { property: "og:url", content: SITE_URL },
       { property: "og:locale", content: "en_US" },
-      { property: "og:image", content: `${SITE_URL}/og.png` },
+      { property: "og:image", content: `${SITE_URL}/og.jpg?v=6` },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
-      { property: "og:image:alt", content: "ShareTemp — Share temporarily. Keep it simple." },
+      { property: "og:image:alt", content: "ShareTemp - Share temporarily. Keep it simple." },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "ShareTemp — Temporary File & Content Sharing" },
+      { name: "twitter:title", content: "ShareTemp - Temporary File & Content Sharing" },
       {
         name: "twitter:description",
         content:
-          "Temporarily share files, text, photos, videos and folders with simple links. Free & anonymous.",
+          "Temporarily share files, text, photos, videos and folders with simple links. Free and anonymous.",
       },
-      { name: "twitter:image", content: `${SITE_URL}/og.png` },
+      { name: "twitter:image", content: `${SITE_URL}/og.jpg?v=6` },
       { name: "twitter:image:alt", content: "ShareTemp temporary sharing" },
     ],
     links: [
@@ -123,7 +123,7 @@ function Index() {
           </h1>
           <p className="mx-auto mt-2.5 max-w-md text-[0.9375rem] leading-relaxed text-muted-foreground sm:mt-4 sm:max-w-xl sm:text-base md:text-lg">
             Drop text, photos, videos or folders. Get a short code and share it.
-            Free — no signup. Content disappears when it expires.
+            Free, no signup. Content disappears when it expires.
           </p>
         </section>
 
@@ -150,7 +150,7 @@ function Index() {
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             ShareTemp is a free temporary sharing tool. Upload text, images or videos and get a
-            short share code — no account needed. Ideal for quick online file share and private
+            short share code. No account needed. Ideal for quick online file share and private
             links that expire automatically.
           </p>
         </section>
