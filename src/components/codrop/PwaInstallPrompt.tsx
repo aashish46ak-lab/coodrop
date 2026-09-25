@@ -27,7 +27,7 @@ function isIosDevice() {
   );
 }
 
-/** Permanent Install button (non-blocking) + centered blur modal */
+/** Permanent Install button (top on phone so it never covers modals) + centered blur modal */
 export function PwaInstallPrompt() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -88,8 +88,9 @@ export function PwaInstallPrompt() {
 
   return (
     <>
+      {/* Floating install chip: always top so it never covers bottom-sheet modals on phone */}
       {!installed ? (
-        <div className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-1/2 z-[80] -translate-x-1/2 sm:bottom-auto sm:left-auto sm:right-4 sm:top-4 sm:translate-x-0">
+        <div className="fixed left-1/2 top-[max(0.75rem,env(safe-area-inset-top))] z-[80] -translate-x-1/2 sm:left-auto sm:right-4 sm:top-4 sm:translate-x-0">
           <button
             type="button"
             onClick={() => setModalOpen(true)}
@@ -126,7 +127,7 @@ export function PwaInstallPrompt() {
             </button>
 
             <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-visible rounded-2xl bg-[#f8fafc] p-3 ring-1 ring-border">
-              <DropMark className="h-14 w-14" size={56} />
+              <DropMark className="h-14 w-14" />
             </div>
 
             <h2
