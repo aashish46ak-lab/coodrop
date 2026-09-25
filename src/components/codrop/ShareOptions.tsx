@@ -8,6 +8,7 @@ export type ShareKind = "text" | "image" | "video";
 const OPTIONS: Array<{
   kind: ShareKind;
   title: string;
+  shortTitle: string;
   description: string;
   icon: LucideIcon;
   iconClass: string;
@@ -15,6 +16,7 @@ const OPTIONS: Array<{
   {
     kind: "text",
     title: "Share Text",
+    shortTitle: "Text",
     description: "Notes, code, links or long text.",
     icon: FileCode2,
     iconClass: "bg-indigo-500/10 text-indigo-600",
@@ -22,6 +24,7 @@ const OPTIONS: Array<{
   {
     kind: "image",
     title: "Share Image",
+    shortTitle: "Image",
     description: "Upload a photo — temporary share.",
     icon: ImageIcon,
     iconClass: "bg-cyan-500/10 text-cyan-600",
@@ -29,6 +32,7 @@ const OPTIONS: Array<{
   {
     kind: "video",
     title: "Share Video",
+    shortTitle: "Video",
     description: "Upload a video — temporary share.",
     icon: PlayCircle,
     iconClass: "bg-violet-500/10 text-violet-600",
@@ -37,6 +41,7 @@ const OPTIONS: Array<{
 
 export function ShareOptionCard({
   title,
+  shortTitle,
   description,
   icon: Icon,
   iconClass,
@@ -45,6 +50,7 @@ export function ShareOptionCard({
   onClick,
 }: {
   title: string;
+  shortTitle: string;
   description: string;
   icon: LucideIcon;
   iconClass: string;
@@ -58,37 +64,37 @@ export function ShareOptionCard({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "group flex w-full flex-col items-start gap-2.5 rounded-2xl border border-border/80 bg-card text-left shadow-[0_1px_2px_rgba(11,13,16,0.04),0_12px_32px_-24px_rgba(11,13,16,0.25)]",
-        "transition-all duration-200 active:scale-[0.98] hover:-translate-y-1 hover:border-indigo-200 hover:shadow-[0_2px_4px_rgba(11,13,16,0.04),0_24px_48px_-28px_rgba(79,70,229,0.35)]",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        "motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100",
-        "disabled:pointer-events-none disabled:opacity-50 disabled:hover:translate-y-0",
-        /* Mobile: larger tap area; desktop: more padding */
-        compact ? "p-4" : "p-4 min-h-[5.5rem] sm:min-h-0 sm:p-5 md:p-6",
+        "group flex w-full flex-col items-center gap-2 rounded-2xl border border-border/80 bg-card text-center shadow-[0_1px_2px_rgba(11,13,16,0.04),0_12px_32px_-24px_rgba(11,13,16,0.25)] sm:items-start sm:text-left",
+        "transition-all duration-200 active:scale-[0.98] hover:border-indigo-200",
+        "sm:hover:-translate-y-1 sm:hover:shadow-[0_2px_4px_rgba(11,13,16,0.04),0_24px_48px_-28px_rgba(79,70,229,0.35)]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "disabled:pointer-events-none disabled:opacity-50",
+        compact ? "p-3 sm:p-4" : "min-h-[5.25rem] p-3 sm:min-h-0 sm:p-5 md:p-6",
       )}
     >
       <span
         className={cn(
-          "inline-flex items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105 motion-reduce:group-hover:scale-100",
+          "inline-flex items-center justify-center rounded-xl",
           iconClass,
           compact ? "h-9 w-9" : "h-10 w-10 sm:h-11 sm:w-11",
         )}
         aria-hidden="true"
       >
-        <Icon className={compact ? "h-4.5 w-4.5" : "h-5 w-5"} />
+        <Icon className={compact ? "h-4 w-4" : "h-5 w-5"} />
       </span>
-      <span className="space-y-0.5 sm:space-y-1">
+      <span className="space-y-0.5">
         <span
           className={cn(
             "block font-semibold tracking-tight text-foreground",
-            compact ? "text-sm" : "text-[0.9375rem] sm:text-base",
+            compact ? "text-sm" : "text-sm sm:text-base",
           )}
         >
-          {title}
+          <span className="sm:hidden">{shortTitle}</span>
+          <span className="hidden sm:inline">{title}</span>
         </span>
         <span
           className={cn(
-            "block text-muted-foreground",
+            "hidden text-muted-foreground sm:block",
             compact ? "text-xs leading-relaxed" : "text-xs leading-relaxed sm:text-sm",
           )}
         >
@@ -117,12 +123,13 @@ export function ShareOptions({
           Offline — reconnect to share.
         </p>
       ) : null}
-      {/* Mobile: single column with comfortable gaps; sm+: 3 cols */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+      {/* Always 3 columns — compact labels on phone */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {OPTIONS.map((option) => (
           <ShareOptionCard
             key={option.kind}
             title={option.title}
+            shortTitle={option.shortTitle}
             description={option.description}
             icon={option.icon}
             iconClass={option.iconClass}
