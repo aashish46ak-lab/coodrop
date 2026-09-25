@@ -45,7 +45,7 @@ export const Route = createFileRoute("/")({
       { property: "og:site_name", content: "ShareTemp" },
       { property: "og:url", content: SITE_URL },
       { property: "og:locale", content: "en_US" },
-      { property: "og:image", content: `${SITE_URL}/og.jpg?v=6` },
+      { property: "og:image", content: `${SITE_URL}/og.jpg?v=7` },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
       { property: "og:image:alt", content: "ShareTemp - Share temporarily. Keep it simple." },
@@ -56,7 +56,7 @@ export const Route = createFileRoute("/")({
         content:
           "Temporarily share files, text, photos, videos and folders with simple links. Free and anonymous.",
       },
-      { name: "twitter:image", content: `${SITE_URL}/og.jpg?v=6` },
+      { name: "twitter:image", content: `${SITE_URL}/og.jpg?v=7` },
       { name: "twitter:image:alt", content: "ShareTemp temporary sharing" },
     ],
     links: [
