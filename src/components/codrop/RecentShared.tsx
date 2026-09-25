@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import {
   ChevronDown,
   ChevronRight,
@@ -35,6 +36,7 @@ const typeIcon = {
 } as const;
 
 export function RecentShared({ className }: { className?: string }) {
+  const navigate = useNavigate();
   const [entries, setEntries] = useState<SharedListEntry[]>([]);
   const [openFolders, setOpenFolders] = useState<Record<string, boolean>>({});
   const [loadingCode, setLoadingCode] = useState<string | null>(null);
@@ -86,13 +88,31 @@ export function RecentShared({ className }: { className?: string }) {
     setLoadingCode(item.code);
     try {
       const result = await getDrop({ data: { code: item.code } });
-      if (result.state === "ok") setPreview(result);
-      else refresh();
+      if (result.state === "ok") {
+        setPreview(result);
+        return;
+      }
+      if (result.state === "expired") {
+        toast.error("This share has expired");
+        removeRecentDrop(item.code);
+        refresh();
+        return;
+      }
+      if (result.state === "locked") {
+        void navigate({ to: "/drop/$code", params: { code: item.code } });
+        return;
+      }
+      // not_found — still try full page (fresh loader)
+      void navigate({ to: "/drop/$code", params: { code: item.code } });
     } catch {
-      refresh();
+      void navigate({ to: "/drop/$code", params: { code: item.code } });
     } finally {
       setLoadingCode(null);
     }
+  }
+
+  function openFolder(batchCode: string) {
+    void navigate({ to: "/batch/$code", params: { code: batchCode } });
   }
 
   async function deleteFile(code: string, e: React.MouseEvent) {
@@ -163,6 +183,13 @@ export function RecentShared({ className }: { className?: string }) {
                     ) : (
                       <ChevronRight className="h-4 w-4 text-muted-foreground" />
                     )}
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded-lg px-2 py-1.5 text-[11px] font-medium text-indigo-600 hover:bg-indigo-50"
+                    onClick={() => openFolder(entry.batchCode)}
+                  >
+                    Open
                   </button>
                   <button
                     type="button"
