@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { MARK_SRC } from "@/components/codrop/markData";
+import { InstallAppButton } from "@/components/codrop/InstallAppButton";
 
 export function DropMark({
   className,
@@ -60,12 +61,16 @@ export function BrandHeader({
 }) {
   return (
     <header className={cn("flex flex-col items-center gap-2 text-center", className)}>
-      <Link
-        to="/"
-        className="inline-flex items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <CodropWordmark size="lg" />
-      </Link>
+      {/* Original name + Install on the side — scrolls with page, not fixed */}
+      <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
+        <Link
+          to="/"
+          className="inline-flex items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <CodropWordmark size="lg" />
+        </Link>
+        <InstallAppButton />
+      </div>
       {tagline ? (
         <p className="text-[0.7rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           {tagline}
