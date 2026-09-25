@@ -25,7 +25,7 @@ const OPTIONS: Array<{
     kind: "image",
     title: "Share Image",
     shortTitle: "Image",
-    description: "Upload a photo — temporary share.",
+    description: "Upload a photo. Temporary share.",
     icon: ImageIcon,
     iconClass: "bg-cyan-500/10 text-cyan-600",
   },
@@ -33,7 +33,7 @@ const OPTIONS: Array<{
     kind: "video",
     title: "Share Video",
     shortTitle: "Video",
-    description: "Upload a video — temporary share.",
+    description: "Upload a video. Temporary share.",
     icon: PlayCircle,
     iconClass: "bg-violet-500/10 text-violet-600",
   },
@@ -120,10 +120,10 @@ export function ShareOptions({
     <div className={cn("space-y-2", className)}>
       {!online ? (
         <p className="text-center text-xs text-amber-700 dark:text-amber-400">
-          Offline — reconnect to share.
+          Offline. Reconnect to share.
         </p>
       ) : null}
-      {/* Always 3 columns — compact labels on phone */}
+      {/* Always 3 columns - compact labels on phone */}
       <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {OPTIONS.map((option) => (
           <ShareOptionCard
