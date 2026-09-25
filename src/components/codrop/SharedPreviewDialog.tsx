@@ -42,38 +42,41 @@ export function SharedPreviewDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-[5%] sm:p-[8%]"
+      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-[6%]"
       role="dialog"
       aria-modal="true"
       aria-label={title}
     >
-      {/* Blur backdrop */}
       <button
         type="button"
-        className="absolute inset-0 bg-black/40 backdrop-blur-md"
+        className="absolute inset-0 bg-black/45 backdrop-blur-md"
         aria-label="Close"
         onClick={() => onOpenChange(false)}
       />
 
-      {/* Centered panel ~10% margin */}
-      <div className="relative z-10 flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-card shadow-2xl">
-        {/* Header row */}
-        <div className="flex items-start justify-between gap-3 border-b border-border px-4 py-3 sm:px-5">
-          <div className="min-w-0 rounded-xl bg-secondary/80 px-3 py-2">
+      <div className="relative z-10 flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-hidden rounded-t-2xl border border-border bg-card shadow-2xl sm:rounded-2xl">
+        <div className="flex items-start justify-between gap-2 border-b border-border px-3 py-3 sm:gap-3 sm:px-5">
+          <div className="min-w-0 flex-1 rounded-xl bg-secondary/80 px-3 py-2">
             <p className="truncate text-sm font-semibold text-foreground">{title}</p>
             <p className="font-mono text-[11px] text-muted-foreground">{drop.code}</p>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5">
             {drop.type === "text" ? (
               <Button
                 size="sm"
+                className="min-h-10 px-3"
                 onClick={() => void copyToClipboard(drop.content ?? "", "Text copied")}
               >
                 <Copy className="mr-1.5 h-3.5 w-3.5" />
                 Copy
               </Button>
             ) : (
-              <Button size="sm" disabled={busy || !drop.fileUrl} onClick={() => void downloadFile()}>
+              <Button
+                size="sm"
+                className="min-h-10 px-3"
+                disabled={busy || !drop.fileUrl}
+                onClick={() => void downloadFile()}
+              >
                 {busy ? (
                   <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                 ) : (
@@ -85,7 +88,7 @@ export function SharedPreviewDialog({
             <Button
               size="icon"
               variant="ghost"
-              className="h-8 w-8"
+              className="h-10 w-10"
               onClick={() => onOpenChange(false)}
               aria-label="Close"
             >
@@ -94,29 +97,30 @@ export function SharedPreviewDialog({
           </div>
         </div>
 
-        {/* Body */}
-        <div className="m-3 overflow-auto rounded-xl border border-border bg-[#0B0D10] sm:m-4">
+        <div className="m-2 overflow-auto rounded-xl border border-border bg-[#0B0D10] sm:m-4">
           {drop.type === "text" ? (
-            <pre className="max-h-[60vh] whitespace-pre-wrap break-words p-4 font-mono text-sm leading-relaxed text-white/90">
+            <pre className="max-h-[55vh] whitespace-pre-wrap break-words p-3 font-mono text-sm leading-relaxed text-white/90 sm:max-h-[60vh] sm:p-4">
               {drop.content ?? ""}
             </pre>
           ) : drop.type === "image" && drop.fileUrl ? (
             <img
               src={drop.fileUrl}
               alt={title}
-              className="mx-auto max-h-[60vh] w-auto max-w-full object-contain"
+              className="mx-auto max-h-[55vh] w-auto max-w-full object-contain sm:max-h-[60vh]"
             />
           ) : drop.fileUrl ? (
             <video
               src={drop.fileUrl}
               controls
               playsInline
-              className="mx-auto max-h-[60vh] w-full"
+              className="mx-auto max-h-[55vh] w-full sm:max-h-[60vh]"
             />
           ) : (
             <p className="p-8 text-center text-sm text-white/60">Content unavailable.</p>
           )}
         </div>
+
+        <div className="h-[env(safe-area-inset-bottom)] sm:hidden" />
       </div>
     </div>
   );

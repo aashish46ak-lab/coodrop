@@ -27,7 +27,7 @@ function isIosDevice() {
   );
 }
 
-/** Permanent top Install button + centered blur modal */
+/** Permanent Install button (non-blocking) + centered blur modal */
 export function PwaInstallPrompt() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -51,7 +51,7 @@ export function PwaInstallPrompt() {
 
     try {
       if (localStorage.getItem(DISMISS_KEY) !== "1") {
-        const t = window.setTimeout(() => setModalOpen(true), 2000);
+        const t = window.setTimeout(() => setModalOpen(true), 2500);
         return () => {
           window.removeEventListener("beforeinstallprompt", onBip);
           window.clearTimeout(t);
@@ -89,21 +89,21 @@ export function PwaInstallPrompt() {
   return (
     <>
       {!installed ? (
-        <div className="fixed right-3 top-3 z-[80] sm:right-5 sm:top-4">
+        <div className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-1/2 z-[80] -translate-x-1/2 sm:bottom-auto sm:left-auto sm:right-4 sm:top-4 sm:translate-x-0">
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-white px-4 text-sm font-semibold text-[#0B0D10] shadow-lg ring-1 ring-black/5 transition hover:bg-secondary active:scale-[0.98]"
+            className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-white px-4 text-sm font-semibold text-[#0B0D10] shadow-lg ring-1 ring-black/5 transition hover:bg-secondary active:scale-[0.98]"
           >
             <Download className="h-4 w-4" aria-hidden="true" />
-            Install
+            Install app
           </button>
         </div>
       ) : null}
 
       {modalOpen ? (
         <div
-          className="fixed inset-0 z-[90] flex items-center justify-center p-5"
+          className="fixed inset-0 z-[90] flex items-end justify-center p-0 sm:items-center sm:p-5"
           role="dialog"
           aria-modal="true"
           aria-labelledby="pwa-install-title"
@@ -115,17 +115,16 @@ export function PwaInstallPrompt() {
             onClick={dismissModal}
           />
 
-          <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-white p-6 shadow-2xl">
+          <div className="relative z-10 w-full max-w-sm rounded-t-2xl border border-border bg-white p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl sm:rounded-2xl sm:pb-6">
             <button
               type="button"
-              className="absolute right-3 top-3 rounded-lg p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground"
+              className="absolute right-3 top-3 rounded-full p-2 text-muted-foreground hover:bg-secondary hover:text-foreground"
               aria-label="Close"
               onClick={dismissModal}
             >
               <X className="h-4 w-4" />
             </button>
 
-            {/* ShareTemp logo — padded so mark is never clipped */}
             <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-visible rounded-2xl bg-[#f8fafc] p-3 ring-1 ring-border">
               <DropMark className="h-14 w-14" size={56} />
             </div>
@@ -157,16 +156,16 @@ export function PwaInstallPrompt() {
 
             <div className="mt-6 flex flex-col gap-2">
               {deferred ? (
-                <Button className="w-full" onClick={() => void install()}>
+                <Button className="min-h-11 w-full" onClick={() => void install()}>
                   <Download className="mr-1.5 h-4 w-4" />
                   Install app
                 </Button>
               ) : (
-                <Button className="w-full" variant="secondary" onClick={dismissModal}>
+                <Button className="min-h-11 w-full" variant="secondary" onClick={dismissModal}>
                   {ios ? "Got it" : "Not now"}
                 </Button>
               )}
-              <Button variant="ghost" className="w-full" onClick={dismissModal}>
+              <Button variant="ghost" className="min-h-11 w-full" onClick={dismissModal}>
                 Maybe later
               </Button>
             </div>

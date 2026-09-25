@@ -65,7 +65,7 @@ export function ShareTextModal({
 
   return (
     <Dialog open={open} onOpenChange={(next) => (busy ? null : onOpenChange(next))}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>Share Text</DialogTitle>
           <DialogDescription>Paste notes, source code, logs, JSON or links.</DialogDescription>
@@ -90,7 +90,7 @@ export function ShareTextModal({
                 placeholder="e.g. Meeting notes"
                 maxLength={120}
                 disabled={busy}
-                className="h-10"
+                className="h-11 text-base sm:h-10 sm:text-sm"
               />
             </div>
             <div className="space-y-1.5">
@@ -106,12 +106,12 @@ export function ShareTextModal({
                   placeholder="Leave empty for public"
                   maxLength={64}
                   disabled={busy}
-                  className="h-10 pr-10"
+                  className="h-11 pr-11 text-base sm:h-10 sm:text-sm"
                   autoComplete="new-password"
                 />
                 <button
                   type="button"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground"
                   onClick={() => setShowPass((v) => !v)}
                   aria-label={showPass ? "Hide password" : "Show password"}
                 >
@@ -123,14 +123,14 @@ export function ShareTextModal({
 
           <div className="space-y-1.5">
             <p className="text-xs font-medium text-muted-foreground">Expires after</p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex gap-2">
               {CODROP.ttlOptions.map((opt) => (
                 <button
                   key={opt.hours}
                   type="button"
                   disabled={busy}
                   onClick={() => setTtl(opt.hours)}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                  className={`min-h-10 flex-1 rounded-full border px-2 py-2 text-xs font-medium transition sm:flex-none sm:px-3 ${
                     ttl === opt.hours
                       ? "border-foreground bg-foreground text-background"
                       : "border-border bg-card text-muted-foreground hover:text-foreground"
@@ -149,7 +149,7 @@ export function ShareTextModal({
             onChange={(event) => setText(event.target.value)}
             spellCheck={false}
             placeholder={"// paste anything here"}
-            className="h-[36vh] min-h-48 w-full resize-y rounded-xl border border-border bg-secondary/30 p-4 font-mono text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-ring"
+            className="h-[28vh] min-h-36 w-full resize-y rounded-xl border border-border bg-secondary/30 p-3 font-mono text-base leading-relaxed focus:outline-none focus:ring-2 focus:ring-ring sm:h-[36vh] sm:min-h-48 sm:p-4 sm:text-sm"
           />
           <p className={`text-xs ${tooLong ? "text-destructive" : "text-muted-foreground"}`}>
             {text.length.toLocaleString()} / {CODROP.maxTextLength.toLocaleString()} characters
@@ -160,6 +160,7 @@ export function ShareTextModal({
           <Button
             type="button"
             variant="ghost"
+            className="min-h-11 sm:min-h-9"
             disabled={busy}
             onClick={() => {
               setText("");
@@ -169,16 +170,22 @@ export function ShareTextModal({
           >
             Clear
           </Button>
-          <div className="flex gap-2">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <Button
               type="button"
               variant="outline"
+              className="min-h-11 sm:min-h-9"
               disabled={busy}
               onClick={() => onOpenChange(false)}
             >
               Cancel
             </Button>
-            <Button type="button" disabled={busy || !canShare} onClick={() => void share()}>
+            <Button
+              type="button"
+              className="min-h-11 sm:min-h-9"
+              disabled={busy || !canShare}
+              onClick={() => void share()}
+            >
               {busy ? (
                 <>
                   <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Creating...

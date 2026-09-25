@@ -108,7 +108,6 @@ export function ShareFileModal({
     setError(null);
     setProgress(0);
     try {
-      // Re-scan right before upload
       const scan = await scanUploadFile(file, kind);
       if (!scan.ok) {
         setError(scan.reason);
@@ -143,7 +142,7 @@ export function ShareFileModal({
 
   return (
     <Dialog open={open} onOpenChange={(next) => (busy ? null : onOpenChange(next))}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{isImage ? "Share Image" : "Share Video"}</DialogTitle>
           <DialogDescription>
@@ -169,7 +168,7 @@ export function ShareFileModal({
               onChange={(e) => setTitle(e.target.value.slice(0, 120))}
               placeholder={isImage ? "e.g. Team photo" : "e.g. Demo clip"}
               disabled={busy}
-              className="h-10"
+              className="h-11 text-base sm:h-10 sm:text-sm"
             />
           </div>
           <div className="space-y-1.5">
@@ -183,12 +182,12 @@ export function ShareFileModal({
                 onChange={(e) => setPassword(e.target.value.slice(0, 64))}
                 placeholder="Leave empty for public"
                 disabled={busy}
-                className="h-10 pr-10"
+                className="h-11 pr-11 text-base sm:h-10 sm:text-sm"
                 autoComplete="new-password"
               />
               <button
                 type="button"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center text-muted-foreground"
                 onClick={() => setShowPass((v) => !v)}
               >
                 {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -199,14 +198,14 @@ export function ShareFileModal({
 
         <div className="space-y-1.5">
           <p className="text-xs font-medium text-muted-foreground">Expires after</p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2">
             {CODROP.ttlOptions.map((opt) => (
               <button
                 key={opt.hours}
                 type="button"
                 disabled={busy}
                 onClick={() => setTtl(opt.hours)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
+                className={`min-h-10 flex-1 rounded-full border px-2 py-2 text-xs font-medium sm:flex-none sm:px-3 ${
                   ttl === opt.hours
                     ? "border-foreground bg-foreground text-background"
                     : "border-border text-muted-foreground"
@@ -234,9 +233,9 @@ export function ShareFileModal({
               <ShieldCheck className="h-4 w-4" /> Scanning file...
             </p>
           ) : previewUrl && isImage ? (
-            <img src={previewUrl} alt="Preview" className="max-h-64 w-full object-contain" />
+            <img src={previewUrl} alt="Preview" className="max-h-48 w-full object-contain sm:max-h-64" />
           ) : previewUrl ? (
-            <video src={previewUrl} controls className="max-h-64 w-full bg-black" />
+            <video src={previewUrl} controls playsInline className="max-h-48 w-full bg-black sm:max-h-64" />
           ) : null}
         </UploadDropzone>
 
@@ -256,10 +255,19 @@ export function ShareFileModal({
         ) : null}
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" disabled={busy} onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            className="min-h-11 sm:min-h-9"
+            disabled={busy}
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
-          <Button disabled={busy || !canShare} onClick={() => void share()}>
+          <Button
+            className="min-h-11 sm:min-h-9"
+            disabled={busy || !canShare}
+            onClick={() => void share()}
+          >
             {busy ? (
               <>
                 <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Uploading...

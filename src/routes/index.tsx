@@ -104,7 +104,7 @@ function Index() {
   }, []);
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden overflow-y-auto">
+    <div className="relative min-h-[100dvh] overflow-x-hidden overflow-y-auto">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-[-8rem] h-[24rem] bg-[radial-gradient(40rem_18rem_at_50%_0%,rgba(59,130,246,0.14),transparent_70%)] sm:top-[-12rem] sm:h-[32rem]"
@@ -114,20 +114,20 @@ function Index() {
         className="pointer-events-none absolute inset-x-0 top-[4rem] h-[20rem] bg-[radial-gradient(28rem_14rem_at_85%_0%,rgba(34,211,238,0.10),transparent_70%)] sm:top-[6rem] sm:h-[28rem]"
       />
 
-      <main className="relative mx-auto w-full max-w-5xl px-4 pb-8 pt-10 sm:px-5 sm:pt-14 md:pt-16">
+      <main className="relative mx-auto w-full max-w-5xl px-4 pb-28 pt-8 sm:px-5 sm:pb-12 sm:pt-14 md:pt-16">
         <BrandHeader />
 
-        <section className="mx-auto mt-8 max-w-2xl text-center sm:mt-12 md:mt-16">
-          <h1 className="text-[1.75rem] font-semibold leading-tight tracking-tight text-foreground xs:text-3xl sm:text-4xl md:text-5xl">
+        <section className="mx-auto mt-6 max-w-2xl text-center sm:mt-12 md:mt-16">
+          <h1 className="text-[1.65rem] font-semibold leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl">
             Share temporarily.
           </h1>
-          <p className="mx-auto mt-3 max-w-md text-[0.9375rem] leading-relaxed text-muted-foreground sm:mt-4 sm:max-w-xl sm:text-base md:text-lg">
+          <p className="mx-auto mt-2.5 max-w-md text-[0.9375rem] leading-relaxed text-muted-foreground sm:mt-4 sm:max-w-xl sm:text-base md:text-lg">
             Drop text, photos, videos or folders. Get a short code and share it.
             Free — no signup. Content disappears when it expires.
           </p>
         </section>
 
-        <div className="mt-6 sm:mt-8 sm:flex sm:justify-end sm:mt-10">
+        <div className="mt-5 sm:mt-10 sm:flex sm:justify-end">
           <div className="block w-full sm:hidden">
             <CodeSearchIsland />
           </div>
@@ -140,11 +140,11 @@ function Index() {
 
         <RecentShared className="mt-8 sm:mt-10" />
 
-        <div className="mt-14 sm:mt-20">
+        <div className="mt-12 sm:mt-20">
           <HowItWorks />
         </div>
 
-        <section className="mx-auto mt-12 max-w-2xl text-center sm:mt-16" aria-label="About ShareTemp">
+        <section className="mx-auto mt-10 max-w-2xl text-center sm:mt-16" aria-label="About ShareTemp">
           <h2 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
             Temporary file &amp; content sharing
           </h2>
