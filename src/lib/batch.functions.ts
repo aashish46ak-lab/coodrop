@@ -23,19 +23,30 @@ function getPublicSupabase() {
   });
 }
 
+/** Folder codes: SHRa23 (new) or CODr21 (legacy). */
+function normalizeBatchCode(raw: string): string | null {
+  const cleaned = String(raw ?? "").trim().replace(/\s+/g, "");
+  const shr = cleaned.match(/^shr([a-zA-Z])(\d{2})$/i);
+  if (shr) return `SHR${shr[1]!.toLowerCase()}${shr[2]}`;
+  const cod = cleaned.match(/^cod([a-zA-Z])(\d{2})$/i);
+  if (cod) return `COD${cod[1]!.toLowerCase()}${cod[2]}`;
+  return null;
+}
+
 export const listBatch = createServerFn({ method: "GET" })
   .inputValidator((data: { code: string }) => {
-    const m = String(data?.code ?? "").match(/^cod([a-zA-Z])(\d{2})$/i);
-    if (!m) throw new Error("invalid_code");
-    return { code: `COD${m[1]!.toLowerCase()}${m[2]}` };
+    const code = normalizeBatchCode(String(data?.code ?? ""));
+    return { code: code ?? "" };
   })
   .handler(async ({ data }): Promise<{ state: "ok" | "not_found"; items: BatchItem[] }> => {
+    if (!data.code) return { state: "not_found", items: [] };
+
     const supabase = getPublicSupabase();
     const { data: rows, error } = await supabase.rpc("list_batch_drops", {
       p_batch_code: data.code,
     });
     if (error) {
-      console.error("[CODrop] list_batch error:", error);
+      console.error("[ShareTemp] list_batch error:", error);
       return { state: "not_found", items: [] };
     }
     const items = (rows ?? []).map(

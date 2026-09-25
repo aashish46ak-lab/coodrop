@@ -34,6 +34,16 @@ function getPublicSupabase() {
   });
 }
 
+/** File codes: STa23 (new) or COe22 (legacy). */
+function normalizeDropCode(raw: string): string | null {
+  const cleaned = String(raw ?? "").trim().replace(/\s+/g, "");
+  const st = cleaned.match(/^st([a-zA-Z])(\d{2})$/i);
+  if (st) return `ST${st[1]!.toLowerCase()}${st[2]}`;
+  const co = cleaned.match(/^co([a-zA-Z])(\d{2})$/i);
+  if (co) return `CO${co[1]!.toLowerCase()}${co[2]}`;
+  return null;
+}
+
 async function sha256(password: string): Promise<string> {
   const data = new TextEncoder().encode(password.trim());
   const buf = await crypto.subtle.digest("SHA-256", data);
@@ -44,14 +54,16 @@ async function sha256(password: string): Promise<string> {
 
 export const getDrop = createServerFn({ method: "GET" })
   .inputValidator((data: { code: string; password?: string }) => {
-    const match = String(data?.code ?? "").match(/^co([a-zA-Z])(\d{2})$/i);
-    if (!match) throw new Error("invalid_code");
+    const code = normalizeDropCode(String(data?.code ?? ""));
+    // Keep invalid codes as empty so handler returns not_found (no throw)
     return {
-      code: `CO${match[1]!.toLowerCase()}${match[2]}`,
+      code: code ?? "",
       password: data.password ? String(data.password) : undefined,
     };
   })
   .handler(async ({ data }): Promise<DropResult> => {
+    if (!data.code) return { state: "not_found" };
+
     const supabase = getPublicSupabase();
 
     let { data: row, error } = await supabase
@@ -75,7 +87,7 @@ export const getDrop = createServerFn({ method: "GET" })
     }
 
     if (error) {
-      console.error("[CODrop] getDrop error:", error);
+      console.error("[ShareTemp] getDrop error:", error);
       throw new Error("lookup_failed");
     }
     if (!row) return { state: "not_found" };
