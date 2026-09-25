@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Download, Share, X } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
-import { DropMark } from "@/components/codrop/Logo";
+import { DropMark, CodropWordmark } from "@/components/codrop/Logo";
 
 const DISMISS_KEY = "sharetemp_pwa_dismissed";
 
@@ -27,7 +28,10 @@ function isIosDevice() {
   );
 }
 
-/** Permanent Install button — fixed top-right on all devices so it never covers modals */
+/**
+ * Fixed top bar: ShareTemp name (left) + Install (right).
+ * position:fixed — page scroll garda mathi sathai jandaina.
+ */
 export function PwaInstallPrompt() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -88,18 +92,38 @@ export function PwaInstallPrompt() {
 
   return (
     <>
-      {/* Fixed top-right on phone and desktop — never covers bottom-sheet modals */}
+      {/* Fixed top bar — name left, Install right. Never scrolls away. */}
       {!installed ? (
-        <div className="fixed right-3 top-[max(0.75rem,env(safe-area-inset-top))] z-[80] sm:right-4 sm:top-4">
-          <button
-            type="button"
-            onClick={() => setModalOpen(true)}
-            className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-white px-4 text-sm font-semibold text-[#0B0D10] shadow-lg ring-1 ring-black/5 transition hover:bg-secondary active:scale-[0.98]"
-          >
-            <Download className="h-4 w-4" aria-hidden="true" />
-            Install app
-          </button>
+        <div
+          className="pointer-events-none fixed inset-x-0 top-0 z-[80] border-b border-border/60 bg-background/90 backdrop-blur-md"
+          style={{ paddingTop: "env(safe-area-inset-top)" }}
+        >
+          <div className="pointer-events-auto mx-auto flex h-12 max-w-5xl items-center justify-between gap-3 px-3 sm:h-14 sm:px-5">
+            <Link
+              to="/"
+              className="inline-flex min-w-0 items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <CodropWordmark size="sm" />
+            </Link>
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-3 text-xs font-semibold text-[#0B0D10] shadow-sm ring-1 ring-black/5 transition hover:bg-secondary active:scale-[0.98] sm:h-10 sm:gap-2 sm:px-4 sm:text-sm"
+            >
+              <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
+              Install app
+            </button>
+          </div>
         </div>
+      ) : null}
+
+      {/* Spacer so page content is not hidden under the fixed bar */}
+      {!installed ? (
+        <div
+          className="h-12 sm:h-14"
+          style={{ marginTop: "env(safe-area-inset-top)" }}
+          aria-hidden="true"
+        />
       ) : null}
 
       {modalOpen ? (
@@ -127,7 +151,7 @@ export function PwaInstallPrompt() {
             </button>
 
             <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-visible rounded-2xl bg-[#f8fafc] p-3 ring-1 ring-border">
-              <DropMark className="h-14 w-14" />
+              <DropMark className="h-14 w-14" size={56} />
             </div>
 
             <h2
