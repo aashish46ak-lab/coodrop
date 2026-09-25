@@ -8,7 +8,7 @@ const publicDir = join(root, "public");
 const scriptsDir = dirname(fileURLToPath(import.meta.url));
 mkdirSync(publicDir, { recursive: true });
 
-const partNames = ["og_p0.b64", "og_p1.b64", "og_p2.b64", "og_p3.b64", "og_p4.b64", "og_p5.b64", "og_p6.b64", "og_p7.b64", "og_p8.b64", "og_p9.b64", "og_p10.b64", "og_p11.b64", "og_p12.b64", "og_p13.b64", "og_p14.b64", "og_p15.b64", "og_p16.b64", "og_p17.b64"];
+const partNames = ["og_p0.b64", "og_p1.b64", "og_p2.b64", "og_p3.b64", "og_p4.b64", "og_p5.b64", "og_p6.b64", "og_p7.b64", "og_p8.b64", "og_p9.b64", "og_p10.b64", "og_p11.b64"];
 const parts = partNames.map((f) => {
   const p = join(scriptsDir, f);
   if (!existsSync(p)) throw new Error("missing " + p);
