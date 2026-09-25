@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as BatchCodeRouteImport } from './routes/batch.$code'
 import { Route as DropCodeRouteImport } from './routes/drop.$code'
+import { Route as FolderCodeRouteImport } from './routes/folder.$code'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,9 +31,19 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BatchCodeRoute = BatchCodeRouteImport.update({
+  id: '/batch/$code',
+  path: '/batch/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DropCodeRoute = DropCodeRouteImport.update({
   id: '/drop/$code',
   path: '/drop/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FolderCodeRoute = FolderCodeRouteImport.update({
+  id: '/folder/$code',
+  path: '/folder/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -39,34 +51,61 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
+  '/batch/$code': typeof BatchCodeRoute
   '/drop/$code': typeof DropCodeRoute
+  '/folder/$code': typeof FolderCodeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
+  '/batch/$code': typeof BatchCodeRoute
   '/drop/$code': typeof DropCodeRoute
+  '/folder/$code': typeof FolderCodeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
+  '/batch/$code': typeof BatchCodeRoute
   '/drop/$code': typeof DropCodeRoute
+  '/folder/$code': typeof FolderCodeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/privacy' | '/terms' | '/drop/$code'
+  fullPaths:
+    | '/'
+    | '/privacy'
+    | '/terms'
+    | '/batch/$code'
+    | '/drop/$code'
+    | '/folder/$code'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/privacy' | '/terms' | '/drop/$code'
-  id: '__root__' | '/' | '/privacy' | '/terms' | '/drop/$code'
+  to:
+    | '/'
+    | '/privacy'
+    | '/terms'
+    | '/batch/$code'
+    | '/drop/$code'
+    | '/folder/$code'
+  id:
+    | '__root__'
+    | '/'
+    | '/privacy'
+    | '/terms'
+    | '/batch/$code'
+    | '/drop/$code'
+    | '/folder/$code'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
+  BatchCodeRoute: typeof BatchCodeRoute
   DropCodeRoute: typeof DropCodeRoute
+  FolderCodeRoute: typeof FolderCodeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -92,11 +131,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/batch/$code': {
+      id: '/batch/$code'
+      path: '/batch/$code'
+      fullPath: '/batch/$code'
+      preLoaderRoute: typeof BatchCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/drop/$code': {
       id: '/drop/$code'
       path: '/drop/$code'
       fullPath: '/drop/$code'
       preLoaderRoute: typeof DropCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/folder/$code': {
+      id: '/folder/$code'
+      path: '/folder/$code'
+      fullPath: '/folder/$code'
+      preLoaderRoute: typeof FolderCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -106,7 +159,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
+  BatchCodeRoute: BatchCodeRoute,
   DropCodeRoute: DropCodeRoute,
+  FolderCodeRoute: FolderCodeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
