@@ -6,12 +6,12 @@ import { Footer } from "@/components/codrop/Footer";
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "Terms — ShareTemp" },
+      { title: "Terms - ShareTemp" },
       {
         name: "description",
         content: "Terms of use for ShareTemp temporary sharing.",
       },
-      { property: "og:title", content: "Terms — ShareTemp" },
+      { property: "og:title", content: "Terms - ShareTemp" },
       {
         property: "og:description",
         content: "Simple rules for using ShareTemp.",
@@ -42,7 +42,7 @@ function Terms() {
         </p>
         <h2 className="text-base font-semibold text-foreground">No warranty</h2>
         <p>
-          ShareTemp is not a backup service. Keep your own copy of anything important — expired
+          ShareTemp is not a backup service. Keep your own copy of anything important. Expired
           shares cannot be recovered. The service is provided without warranties of any kind.
         </p>
         <h2 className="text-base font-semibold text-foreground">Liability</h2>

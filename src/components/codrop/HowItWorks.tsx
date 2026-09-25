@@ -4,7 +4,7 @@ const STEPS = [
   {
     icon: UploadCloud,
     title: "Share",
-    text: "Upload text, images or videos — free temporary share, no account.",
+    text: "Upload text, images or videos. Free temporary share, no account.",
   },
   {
     icon: KeyRound,
@@ -14,7 +14,7 @@ const STEPS = [
   {
     icon: Send,
     title: "Send",
-    text: "Send the code to anyone. They open it — then it expires.",
+    text: "Send the code to anyone. They open it, then it expires.",
   },
 ];
 
@@ -28,7 +28,7 @@ export function HowItWorks() {
         How ShareTemp works
       </h2>
       <p className="mx-auto mt-1.5 max-w-md text-center text-xs text-muted-foreground sm:text-sm">
-        Simple temporary sharing — built for phones and desktop.
+        Simple temporary sharing, built for phones and desktop.
       </p>
 
       <ol className="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-3 sm:gap-4">

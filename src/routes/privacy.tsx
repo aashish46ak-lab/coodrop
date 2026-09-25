@@ -6,13 +6,13 @@ import { Footer } from "@/components/codrop/Footer";
 export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
-      { title: "Privacy — ShareTemp" },
+      { title: "Privacy - ShareTemp" },
       {
         name: "description",
         content:
           "How ShareTemp handles temporary shares: no accounts, minimal data, and every share deleted after it expires.",
       },
-      { property: "og:title", content: "Privacy — ShareTemp" },
+      { property: "og:title", content: "Privacy - ShareTemp" },
       {
         property: "og:description",
         content: "No accounts required. Shares expire and are removed automatically.",
@@ -54,7 +54,7 @@ function Privacy() {
           in local storage so you can manage your own shares on this device. You can clear this data
           anytime from your browser settings.
         </p>
-        <h2 className="text-base font-semibold text-foreground">Analytics & cookies</h2>
+        <h2 className="text-base font-semibold text-foreground">Analytics and cookies</h2>
         <p>
           ShareTemp does not use advertising trackers. We may use essential cookies or local storage
           for consent preference and basic service operation. See the cookie banner for choices.
