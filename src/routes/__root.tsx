@@ -18,7 +18,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 const SITE_URL = "https://sharetemp.vercel.app";
-const OG_IMAGE = `${SITE_URL}/og.jpg?v=6`;
+const OG_IMAGE = `${SITE_URL}/og.jpg?v=7`;
 
 function NotFoundComponent() {
   return (
@@ -123,7 +123,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
       { property: "og:image:type", content: "image/jpeg" },
-      { property: "og:image:alt", content: "ShareTemp logo" },
+      { property: "og:image:alt", content: "ShareTemp - Share temporarily. Keep it simple." },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "ShareTemp - Temporary File & Content Sharing" },
       {
