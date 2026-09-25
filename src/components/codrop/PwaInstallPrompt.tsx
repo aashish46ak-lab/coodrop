@@ -27,7 +27,7 @@ function isIosDevice() {
   );
 }
 
-/** Permanent Install button (top on phone so it never covers modals) + centered blur modal */
+/** Permanent Install button — fixed top-right on all devices so it never covers modals */
 export function PwaInstallPrompt() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -88,9 +88,9 @@ export function PwaInstallPrompt() {
 
   return (
     <>
-      {/* Floating install chip: always top so it never covers bottom-sheet modals on phone */}
+      {/* Fixed top-right on phone and desktop — never covers bottom-sheet modals */}
       {!installed ? (
-        <div className="fixed left-1/2 top-[max(0.75rem,env(safe-area-inset-top))] z-[80] -translate-x-1/2 sm:left-auto sm:right-4 sm:top-4 sm:translate-x-0">
+        <div className="fixed right-3 top-[max(0.75rem,env(safe-area-inset-top))] z-[80] sm:right-4 sm:top-4">
           <button
             type="button"
             onClick={() => setModalOpen(true)}
