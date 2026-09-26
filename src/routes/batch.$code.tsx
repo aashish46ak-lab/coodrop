@@ -10,7 +10,6 @@ import {
   Square,
   Video,
 } from "lucide-react";
-import { toast } from "sonner";
 
 import { BrandHeader } from "@/components/codrop/Logo";
 import { CodeSearchIsland } from "@/components/codrop/CodeSearchIsland";
@@ -18,8 +17,7 @@ import { Footer } from "@/components/codrop/Footer";
 import { ExpirationTimer } from "@/components/codrop/ExpirationTimer";
 import { Button } from "@/components/ui/button";
 import { listBatch } from "@/lib/batch.functions";
-import { getDrop } from "@/lib/drops.functions";
-import { triggerDownload } from "@/lib/clipboard";
+import { downloadDropsAsZip } from "@/lib/zip-download";
 
 export const Route = createFileRoute("/batch/$code")({
   loader: async ({ params }) => {
@@ -46,6 +44,7 @@ function BatchPage() {
   const items = data.items ?? [];
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [dlBusy, setDlBusy] = useState(false);
+  const [progress, setProgress] = useState("");
 
   const downloadable = useMemo(
     () => items.filter((i) => !i.hasPassword),
@@ -69,55 +68,22 @@ function BatchPage() {
     else setSelected(new Set(downloadable.map((i) => i.code)));
   }
 
-  async function downloadCodes(codes: string[]) {
-    if (!codes.length) {
-      toast.error("Select at least one item.");
-      return;
-    }
+  async function downloadCodes(codes: string[], zipName: string) {
+    if (!codes.length) return;
     setDlBusy(true);
-    let ok = 0;
-    let locked = 0;
+    setProgress("Preparing files...");
     try {
-      for (const c of codes) {
-        const result = await getDrop({ data: { code: c } });
-        if (result.state === "locked") {
-          locked++;
-          continue;
-        }
-        if (result.state !== "ok") continue;
-        if (result.type === "text") {
-          const blob = new Blob([result.content ?? ""], {
-            type: "text/plain;charset=utf-8",
-          });
-          const url = URL.createObjectURL(blob);
-          triggerDownload(url, `${result.originalFilename ?? result.code}.txt`);
-          window.setTimeout(() => URL.revokeObjectURL(url), 2000);
-          ok++;
-        } else if (result.fileUrl) {
-          try {
-            const response = await fetch(result.fileUrl);
-            if (!response.ok) throw new Error("fail");
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            triggerDownload(url, result.originalFilename ?? result.code);
-            window.setTimeout(() => URL.revokeObjectURL(url), 2000);
-            ok++;
-            await new Promise((r) => setTimeout(r, 350));
-          } catch {
-            toast.error(`Could not download ${c}`);
-          }
-        }
-      }
-      if (ok) toast.success(`Downloaded ${ok} file${ok === 1 ? "" : "s"}`);
-      else if (locked) toast.error("Password-protected items need to be opened one by one.");
-      else toast.error("Nothing could be downloaded.");
+      await downloadDropsAsZip(codes, zipName, (done, total) => {
+        setProgress(done >= total ? "Packing ZIP..." : `Adding ${done + 1} of ${total}`);
+      });
     } finally {
       setDlBusy(false);
+      setProgress("");
     }
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden pb-28 sm:pb-10">
       <main className="relative mx-auto w-full max-w-3xl px-5 pt-12 sm:pt-16">
         <Link to="/" className="block">
           <BrandHeader tagline={null} />
@@ -140,7 +106,7 @@ function BatchPage() {
             {code}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            All items shared under this folder code
+            Tap items to select. Download saves everything in one ZIP.
           </p>
         </div>
 
@@ -156,14 +122,14 @@ function BatchPage() {
           </div>
         ) : (
           <>
-            <div className="mt-8 flex flex-wrap items-center justify-between gap-2">
+            <div className="mt-8 hidden items-center justify-between gap-2 sm:flex">
               <button
                 type="button"
                 onClick={toggleAll}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+                className="inline-flex min-h-10 items-center gap-2 rounded-full border border-border bg-card px-3 text-sm font-medium text-foreground"
               >
                 {allSelected ? (
-                  <CheckSquare className="h-4 w-4" />
+                  <CheckSquare className="h-4 w-4 text-indigo-600" />
                 ) : (
                   <Square className="h-4 w-4" />
                 )}
@@ -174,27 +140,33 @@ function BatchPage() {
                   size="sm"
                   variant="outline"
                   disabled={dlBusy || selected.size === 0}
-                  onClick={() => void downloadCodes([...selected])}
+                  onClick={() =>
+                    void downloadCodes([...selected], `${code}-selected`)
+                  }
                 >
                   {dlBusy ? (
                     <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                   ) : (
                     <Download className="mr-1.5 h-3.5 w-3.5" />
                   )}
-                  Download selected
-                  {selected.size ? ` (${selected.size})` : ""}
+                  Selected{selected.size ? ` (${selected.size})` : ""}
                 </Button>
                 <Button
                   size="sm"
                   disabled={dlBusy || downloadable.length === 0}
-                  onClick={() => void downloadCodes(downloadable.map((i) => i.code))}
+                  onClick={() =>
+                    void downloadCodes(
+                      downloadable.map((i) => i.code),
+                      `${code}-folder`,
+                    )
+                  }
                 >
                   {dlBusy ? (
                     <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                   ) : (
                     <Download className="mr-1.5 h-3.5 w-3.5" />
                   )}
-                  Download all
+                  Download all as ZIP
                 </Button>
               </div>
             </div>
@@ -211,14 +183,14 @@ function BatchPage() {
                       aria-label={isOn ? "Deselect" : "Select"}
                       disabled={locked}
                       onClick={() => toggle(item.code)}
-                      className="flex w-10 shrink-0 items-center justify-center rounded-2xl border border-border bg-card text-muted-foreground transition hover:border-indigo-200 hover:text-foreground disabled:opacity-40"
+                      className="flex w-12 shrink-0 items-center justify-center rounded-2xl border border-border bg-card text-muted-foreground transition hover:border-indigo-200 hover:text-foreground disabled:opacity-40"
                     >
                       {locked ? (
-                        <Lock className="h-3.5 w-3.5" />
+                        <Lock className="h-4 w-4" />
                       ) : isOn ? (
-                        <CheckSquare className="h-4 w-4 text-indigo-600" />
+                        <CheckSquare className="h-5 w-5 text-indigo-600" />
                       ) : (
-                        <Square className="h-4 w-4" />
+                        <Square className="h-5 w-5" />
                       )}
                     </button>
                     <Link
@@ -250,13 +222,57 @@ function BatchPage() {
               })}
             </ul>
             <p className="mt-3 text-center text-[11px] text-muted-foreground">
-              Password-protected items open one by one (not in bulk download).
+              One ZIP download. Locked items must be opened separately.
             </p>
           </>
         )}
 
         <Footer />
       </main>
+
+      {items.length > 0 ? (
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 px-4 py-3 backdrop-blur sm:hidden"
+          style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+        >
+          <div className="mx-auto flex max-w-3xl items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleAll}
+              className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-xl border border-border px-3 text-xs font-medium"
+            >
+              {allSelected ? (
+                <CheckSquare className="h-4 w-4 text-indigo-600" />
+              ) : (
+                <Square className="h-4 w-4" />
+              )}
+              All
+            </button>
+            <Button
+              className="h-11 flex-1"
+              disabled={dlBusy || (selected.size === 0 && downloadable.length === 0)}
+              onClick={() =>
+                void downloadCodes(
+                  selected.size
+                    ? [...selected]
+                    : downloadable.map((i) => i.code),
+                  selected.size ? `${code}-selected` : `${code}-folder`,
+                )
+              }
+            >
+              {dlBusy ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="mr-1.5 h-4 w-4" />
+              )}
+              {dlBusy
+                ? progress || "Downloading"
+                : selected.size
+                  ? `Download ${selected.size} as ZIP`
+                  : "Download all as ZIP"}
+            </Button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
