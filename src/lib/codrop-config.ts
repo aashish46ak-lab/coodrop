@@ -15,7 +15,10 @@ const MB = 1024 * 1024;
 export const CODROP = {
   maxTextLength: envNumber(import.meta.env["VITE_MAX_TEXT_CHARS"], 500_000),
   maxImageBytes: envNumber(import.meta.env["VITE_MAX_IMAGE_MB"], 25) * MB,
-  maxVideoBytes: envNumber(import.meta.env["VITE_MAX_VIDEO_MB"], 200) * MB,
+  /** Higher quality videos — default 500 MB (override with VITE_MAX_VIDEO_MB) */
+  maxVideoBytes: envNumber(import.meta.env["VITE_MAX_VIDEO_MB"], 500) * MB,
+  /** Max files per media share */
+  maxMediaFiles: envNumber(import.meta.env["VITE_MAX_MEDIA_FILES"], 20),
   imageMimeTypes: ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"],
   videoMimeTypes: [
     "video/mp4",
@@ -36,6 +39,15 @@ export const SHARETEMP = CODROP;
 
 export const IMAGE_ACCEPT = ".jpg,.jpeg,.png,.webp,.gif";
 export const VIDEO_ACCEPT = ".mp4,.webm,.mov,.ogv,.mkv";
+export const MEDIA_ACCEPT = `${IMAGE_ACCEPT},${VIDEO_ACCEPT}`;
+
+export function isImageMime(type: string): boolean {
+  return type.startsWith("image/") || CODROP.imageMimeTypes.includes(type as never);
+}
+
+export function isVideoMime(type: string): boolean {
+  return type.startsWith("video/") || CODROP.videoMimeTypes.includes(type as never);
+}
 
 export function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -47,10 +59,8 @@ export function formatBytes(bytes: number): string {
 /** Normalize individual drop/file code. New: STa23. Legacy: COe22. */
 export function normalizeCode(raw: string): string {
   const cleaned = raw.trim().replace(/\s+/g, "");
-  // New format
   const st = cleaned.match(/^st([a-zA-Z])(\d{2})$/i);
   if (st) return `ST${st[1]!.toLowerCase()}${st[2]}`;
-  // Legacy CODrop
   const co = cleaned.match(/^co([a-zA-Z])(\d{2})$/i);
   if (co) return `CO${co[1]!.toLowerCase()}${co[2]}`;
   return "";
@@ -62,19 +72,15 @@ export function normalizeAnyCode(
 ): { kind: "drop" | "batch"; code: string } | null {
   const cleaned = raw.trim().replace(/\s+/g, "");
 
-  // Folder / batch — new
   const shr = cleaned.match(/^shr([a-zA-Z])(\d{2})$/i);
   if (shr) return { kind: "batch", code: `SHR${shr[1]!.toLowerCase()}${shr[2]}` };
 
-  // Folder / batch — legacy
   const cod = cleaned.match(/^cod([a-zA-Z])(\d{2})$/i);
   if (cod) return { kind: "batch", code: `COD${cod[1]!.toLowerCase()}${cod[2]}` };
 
-  // File — new
   const st = cleaned.match(/^st([a-zA-Z])(\d{2})$/i);
   if (st) return { kind: "drop", code: `ST${st[1]!.toLowerCase()}${st[2]}` };
 
-  // File — legacy
   const co = cleaned.match(/^co([a-zA-Z])(\d{2})$/i);
   if (co) return { kind: "drop", code: `CO${co[1]!.toLowerCase()}${co[2]}` };
 

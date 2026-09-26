@@ -1,9 +1,9 @@
-import { FileCode2, ImageIcon, PlayCircle, type LucideIcon } from "lucide-react";
+import { FileCode2, Images, type LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useOnline } from "@/hooks/use-online";
 
-export type ShareKind = "text" | "image" | "video";
+export type ShareKind = "text" | "media";
 
 const OPTIONS: Array<{
   kind: ShareKind;
@@ -22,20 +22,12 @@ const OPTIONS: Array<{
     iconClass: "bg-indigo-500/10 text-indigo-600",
   },
   {
-    kind: "image",
-    title: "Share Image",
-    shortTitle: "Image",
-    description: "Upload a photo. Temporary share.",
-    icon: ImageIcon,
+    kind: "media",
+    title: "Share Media",
+    shortTitle: "Media",
+    description: "Photos and videos. Multi-select supported.",
+    icon: Images,
     iconClass: "bg-cyan-500/10 text-cyan-600",
-  },
-  {
-    kind: "video",
-    title: "Share Video",
-    shortTitle: "Video",
-    description: "Upload a video. Temporary share.",
-    icon: PlayCircle,
-    iconClass: "bg-violet-500/10 text-violet-600",
   },
 ];
 
@@ -123,8 +115,7 @@ export function ShareOptions({
           Offline. Reconnect to share.
         </p>
       ) : null}
-      {/* Always 3 columns - compact labels on phone */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4">
         {OPTIONS.map((option) => (
           <ShareOptionCard
             key={option.kind}
